@@ -24,7 +24,7 @@ namespace XOX.Objects
         /// <summary>
         /// Чем заполнена, если заполнена
         /// </summary>
-        public string value = string.Empty;
+        public string Value = string.Empty;
 
         public Cell(int x, int y)
         {
