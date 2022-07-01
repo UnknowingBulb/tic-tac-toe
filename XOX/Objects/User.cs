@@ -25,7 +25,7 @@ namespace XOX.Objects
         {
             Id = id;
             Name = isFirst ? "Player1" : "Player2";
-            Mark = isFirst ? "X" : "O";
+            Mark = isFirst ? "🙄" : "😡";
         }
     }
 }

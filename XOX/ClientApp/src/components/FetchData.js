@@ -12,14 +12,31 @@ export class FetchData extends Component {
     this.populateWeatherData();
   }
 
-  static renderForecastsTable(data) {
+    async connect() {
+        const response = await fetch('connect', {
+            method: "POST",
+        });
+        const data = await response.json();
+        this.state = { data: data, loading: true };
+    }
+
+    async setMark(x, y) {
+        const response = await fetch('setMark?sessionId=0&x=' + x + '&y=' + y, {
+            method: "POST",
+        });
+        const data = await response.json();
+        this.state = { data: data, loading: true };
+        this.render();
+    }
+
+  renderForecastsTable(data) {
     return (
-      <table className='table table-striped' aria-labelledby="tabelLabel">
+      <table className='playground' aria-labelledby="tabelLabel">
             <tbody>
                 {data.Field.Cells.map((row) => 
-                        <tr key={row[0].x}>{row.map((cell) =>
-                            <td key={cell.x + "" + cell.y}> {cell.Value} </td>)}
-                        </tr>      
+                    <tr key={row[0].x}>{row.map((cell) =>
+                        <td key={cell.x + "" + cell.y} onClick={() => this.setMark(cell.x, cell.y)}> {cell.Value}</td>)}
+                    </tr>      
             )}
             </tbody>
       </table>
@@ -28,16 +45,19 @@ export class FetchData extends Component {
 
   render() {
     let contents = this.state.loading
-      ? <p><em>Loading...</em></p>
-      : FetchData.renderForecastsTable(this.state.data);
-
-    return (
+        ? 
       <div>
-        <h1 id="tabelLabel" >Weather forecast</h1>
-        <p>This component demonstrates fetching data from the server.</p>
-        {contents}
+        <h1 id="tabelLabel">Wait pls</h1>
+            <p><em>Loading...</em></p>
       </div>
-    );
+        :
+        <div>
+            <h1 id="tabelLabel" onClick={() => this.setMark(1, 1)}>{this.state.data.Player1.Name + "-" + this.state.data.Player1.Mark}</h1>
+            <button id="connect" onClick={ () => this.connect()}>Connect</button>
+            {this.renderForecastsTable(this.state.data)}
+        </div>;
+
+    return (contents);
   }
 
   async populateWeatherData() {
@@ -45,5 +65,5 @@ export class FetchData extends Component {
       const data = await response.json();
       console.log(data);
     this.setState({ data: data, loading: false });
-  }
+    }
 }
