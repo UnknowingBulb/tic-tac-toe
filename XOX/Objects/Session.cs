@@ -8,6 +8,7 @@ namespace XOX.Objects
         public User Player2;
         public Field Field;
         public SessionState State;
+        public bool IsActivePlayer1;
 
         public int Id;
 
@@ -17,6 +18,7 @@ namespace XOX.Objects
             Field = new Field();
             Id = SessionListHandler.NewId;
             Player1 = player;
+            IsActivePlayer1 = true;
         }
     }
 }

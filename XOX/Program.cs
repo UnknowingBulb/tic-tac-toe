@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using System;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 
 namespace XOX
 {
@@ -12,21 +11,11 @@ namespace XOX
             CreateHostBuilder(args).Build().Run();
         }
 
-        public static WebApplicationBuilder CreateHostBuilder(string[] args)
-        {
-            var builder = WebApplication.CreateBuilder(args);
-   
-            builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-                .AddCookie(options =>
+        public static IHostBuilder CreateHostBuilder(string[] args) =>
+            Host.CreateDefaultBuilder(args)
+                .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    options.ExpireTimeSpan = TimeSpan.FromHours(20);
-                    options.SlidingExpiration = true;
-                    options.AccessDeniedPath = "/Forbidden/";
+                    webBuilder.UseStartup<Startup>();
                 });
-
-            builder.Services.AddControllersWithViews();
-            builder.Services.AddRazorPages();
-            return builder;
-        }
     }
 }

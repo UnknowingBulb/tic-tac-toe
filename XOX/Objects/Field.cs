@@ -26,6 +26,13 @@ namespace XOX.Objects
         {
             this.size = size;
             Cells = new Cell[size, size];
+            for (int x = 0; x < size; x++)
+            {
+                for (int y = 0; y < size; y++)
+                {
+                    Cells[x, y] = new Cell(x, y);
+                }
+            }
         }
 
         public bool IsGameCompleted()
@@ -38,7 +45,8 @@ namespace XOX.Objects
                 completed = true;
                 for (int y = 0; y < size - 1; y++)
                 {
-                    if (Cells[x, y].Value != Cells[x, y + 1].Value)
+                    if (Cells[x, y].Value != Cells[x, y + 1].Value 
+                        || Cells[x, y + 1].Value == string.Empty || Cells[x, y].Value == string.Empty)
                     {
                         completed = false;
                         break;
@@ -54,7 +62,8 @@ namespace XOX.Objects
                 completed = true;
                 for (int x = 0; x < size - 1; x++)
                 {
-                    if (Cells[x, y].Value != Cells[x + 1, y].Value)
+                    if (Cells[x, y].Value != Cells[x + 1, y].Value
+                        || Cells[x, y].Value == string.Empty || Cells[x + 1, y].Value == string.Empty)
                     {
                         completed = false;
                         break;
@@ -69,7 +78,8 @@ namespace XOX.Objects
             for (int x = 0; x < size - 1; x++)
             {
                 if (!((Cells[x, x].Value == Cells[x + 1, x + 1].Value) || 
-                    (Cells[size - x - 1 , size - x - 1].Value == Cells[size - x, size - x].Value)))
+                    (Cells[x , size - x - 1].Value == Cells[x + 1, size - x - 2].Value))
+                        || Cells[x, x].Value == string.Empty || Cells[x, size - x - 1].Value == string.Empty)
                 {
                     completed = false;
                     break;

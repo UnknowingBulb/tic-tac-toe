@@ -11,9 +11,21 @@ namespace XOX.Objects
         public string Name;
         public string Mark;
 
-        /// <summary>
-        /// Ход этого игрока или нет
-        /// </summary>
-        public bool Active;
+        // TODO: создать нормально, а не как сейчас
+        public bool isFirst;
+
+        public User(Guid id, string name, string mark)
+        {
+            Id = id;
+            Name = name;
+            Mark = mark;
+        }
+
+        public User(Guid id, bool isFirst = false)
+        {
+            Id = id;
+            Name = isFirst ? "Player1" : "Player2";
+            Mark = isFirst ? "X" : "O";
+        }
     }
 }

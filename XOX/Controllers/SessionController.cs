@@ -34,7 +34,7 @@ namespace XOX.Controllers
         public IActionResult StartSession()
         {
             Guid userId = setAuth();
-            User user = UserListHandler.GetUser(userId);
+            User user = UserListHandler.AddUser(new User(userId, true));
             Session session = new Session(user);
             SessionListHandler.AddSession(session);
             return Ok(JsonConvert.SerializeObject(session));
@@ -48,12 +48,18 @@ namespace XOX.Controllers
                 return NotFound("Игровая сессия не найдена");
 
             Guid userId = setAuth();
+            User user = UserListHandler.GetUser(userId);
+            if (user == null)
+                user = UserListHandler.AddUser(new User(userId, false));
             //Если свободных слотов нет
             if (!((session.Player1 == null || session.Player2 == null) ||
-                (session.Player1.Id != userId || session.Player2.Id != userId)))
+                (session.Player1.Id == userId || session.Player2.Id == userId)))
                 return NotFound("Нет свободных слотов");
 
-            session.Player2.Id = userId;
+            if (session.Player1 == null || session.Player1.Id == userId)
+                session.Player1 = user;
+            else
+                session.Player2 = user;
             SessionListHandler.AddSession(session);
             return Ok(JsonConvert.SerializeObject(session));
         }
@@ -61,24 +67,27 @@ namespace XOX.Controllers
         [HttpPost, Route("/setMark")]
         public IActionResult SetMark(int sessionId, int x, int y)
         {
-            Session session = SessionListHandler.GetSession(sessionId);
+            Session session = SessionListHandler.GetSession(sessionId);;
             if (session == null)
                 return NotFound("Игровая сессия не найдена");
             if (session.State == SessionState.Finished || session.State == SessionState.Undefined)
-                return ValidationProblem("Игровая сессия завершена или не найдена");
+                return BadRequest("Игровая сессия завершена или не найдена");
 
             Guid userId = setAuth();
+            if (session.Player1.Id == userId && session.Player2 == null)
+                return BadRequest("2й игрок не подключился, невозможно начать");
             //Если свободных слотов нет
             if (!((session.Player1 == null || session.Player2 == null) ||
-                (session.Player1.Id != userId || session.Player2.Id != userId)))
+                (session.Player1.Id == userId || session.Player2.Id == userId)))
                 return Unauthorized("Вы не участвуете в игре, можно только смотреть");
 
             User user = UserListHandler.GetUser(userId);
 
-            if (user.Active == false)
-                return Forbid("Действие запрещено, не ваш ход");
+            if ((session.IsActivePlayer1 && session.Player1.Id != userId)||
+                (!session.IsActivePlayer1 && session.Player2.Id != userId ))
+                return BadRequest("Действие запрещено, не ваш ход");
             session.Field.Cells[x, y].Value = user.Mark;
-            user.Active = false;
+            session.IsActivePlayer1 = !session.IsActivePlayer1;
             if (session.Field.IsGameCompleted())
                 session.State = SessionState.Finished;
             else
