@@ -16,7 +16,7 @@ namespace XOX.Objects
         {
             bool exist = Sessions.TryGetValue(session.Id, out Session existing);
             if (exist)
-                existing = session;
+                Sessions[session.Id] = session;
             else
                 Sessions.TryAdd(session.Id, session);
         }

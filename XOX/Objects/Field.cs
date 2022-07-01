@@ -52,10 +52,11 @@ namespace XOX.Objects
                         break;
                     }
                 }
-            }
-            if (completed == true)
-                return completed;
 
+                if (completed)
+                    return completed;
+
+            }
             //Check for vertical lines
             for (int y = 0; y < size; y++)
             {
@@ -69,9 +70,9 @@ namespace XOX.Objects
                         break;
                     }
                 }
+                if (completed)
+                    return completed;
             }
-            if (completed == true)
-                return completed;
 
             completed = true;
             //Check for diagonals. For this game I take strictrly end-to-end diagonal

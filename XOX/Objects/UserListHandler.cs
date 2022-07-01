@@ -15,7 +15,7 @@ namespace XOX.Objects
             bool exist = Users.TryGetValue(user.Id, out User existing);
             if (exist)
                 //TODO: это фигня, но надо обновлять в списке (или БД), если уже есть
-                existing = user;
+                Users[user.Id] = user;
             else
                 Users.TryAdd(user.Id, user);
             return user;
