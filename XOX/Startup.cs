@@ -48,6 +48,8 @@ namespace XOX
             app.UseStaticFiles();
             app.UseSpaStaticFiles();
 
+            app.UseAuthentication();
+
             app.UseRouting();
 
             app.UseEndpoints(endpoints =>

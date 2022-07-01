@@ -8,10 +8,7 @@ namespace XOX.Objects
     //TODO: заменить на нормальное, здесь временно сделано, чтобы было
     static public class UserListHandler
     {
-        static private Dictionary<int, User> Users = new Dictionary<int, User>();
-
-        static private int newId = 0;
-        static public int NewId { get => newId++; private set { newId = value; } }
+        static private Dictionary<Guid, User> Users = new Dictionary<Guid, User>();
 
         static public void AddUser(User user)
         {
@@ -22,13 +19,13 @@ namespace XOX.Objects
                 Users.TryAdd(user.Id, user);
         }
 
-        static public User GetUser(int userId)
+        static public User GetUser(Guid userId)
         {
             Users.TryGetValue(userId, out User user);
             return user;
         }
 
-        static public void Remove(int userId)
+        static public void Remove(Guid userId)
         {
             Users.Remove(userId);
         }

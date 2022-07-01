@@ -7,7 +7,7 @@ namespace XOX.Objects
 {
     public class User
     {
-        public int Id;
+        public Guid Id;
         public string Name;
         public string Mark;
 

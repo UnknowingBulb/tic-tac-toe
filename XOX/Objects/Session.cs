@@ -1,9 +1,4 @@
-﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using XOX.Enums;
+﻿using XOX.Enums;
 
 namespace XOX.Objects
 {
@@ -16,11 +11,12 @@ namespace XOX.Objects
 
         public int Id;
 
-        public Session()
+        public Session(User player)
         {
             State = SessionState.NotStarted;
             Field = new Field();
             Id = SessionListHandler.NewId;
+            Player1 = player;
         }
     }
 }
