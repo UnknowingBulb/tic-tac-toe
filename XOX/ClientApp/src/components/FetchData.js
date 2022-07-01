@@ -17,7 +17,7 @@ export class FetchData extends Component {
             method: "POST",
         });
         const data = await response.json();
-        this.state = { data: data, loading: true };
+        this.setState({ data: data, loading: false });
     }
 
     async setMark(x, y) {
@@ -25,8 +25,7 @@ export class FetchData extends Component {
             method: "POST",
         });
         const data = await response.json();
-        this.state = { data: data, loading: true };
-        this.render();
+        this.setState({ data: data, loading: false });
     }
 
   renderForecastsTable(data) {
