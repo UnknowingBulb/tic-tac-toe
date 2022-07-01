@@ -79,7 +79,7 @@ namespace XOX.Objects
             {
                 if (!((Cells[x, x].Value == Cells[x + 1, x + 1].Value) || 
                     (Cells[x , size - x - 1].Value == Cells[x + 1, size - x - 2].Value))
-                        || Cells[x, x].Value == string.Empty || Cells[x, size - x - 1].Value == string.Empty)
+                        || !(Cells[x, x].Value != string.Empty || Cells[x, size - x - 1].Value != string.Empty))
                 {
                     completed = false;
                     break;
