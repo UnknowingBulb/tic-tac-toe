@@ -1,6 +1,6 @@
 ﻿using XOX.Enums;
 
-namespace XOX.Objects
+namespace XOX.BLObjects
 {
     public class Session
     {

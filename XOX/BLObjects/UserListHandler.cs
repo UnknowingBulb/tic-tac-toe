@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace XOX.Objects
+namespace XOX.BLObjects
 {
     //TODO: заменить на нормальное, здесь временно сделано, чтобы было
     static public class UserListHandler

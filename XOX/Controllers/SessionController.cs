@@ -1,10 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using XOX.Objects;
+using XOX.BLObjects;
 using Newtonsoft.Json;
 using XOX.Enums;
-using System.Net.Http;
-using Microsoft.Net.Http.Headers;
 using System;
 using Microsoft.AspNetCore.Http;
 
