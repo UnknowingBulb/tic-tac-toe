@@ -1,9 +1,13 @@
+using Lib.AspNetCore.ServerSentEvents;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System.Linq;
+using XOX.Services;
 
 namespace XOX
 {
@@ -19,7 +23,23 @@ namespace XOX
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            // Register default ServerSentEventsService.
+            services.AddServerSentEvents();
 
+            // Registers custom ServerSentEventsService which will be used by second middleware, otherwise they would end up sharing connected users.
+            services.AddServerSentEvents<INotificationsServerSentEventsService, NotificationsServerSentEventsService>(options =>
+            {
+                options.ReconnectInterval = 5000;
+            });
+
+            // Register cookie based clients identifier provider for Server Sent Events
+            services.AddServerSentEventsClientIdProvider<CookieBasedServerSentEventsClientIdProvider>();
+            services.AddNotificationsService(Configuration);
+
+            services.AddResponseCompression(options =>
+            {
+                options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[] { "text/event-stream" });
+            });
             services.AddControllersWithViews();
 
             // In production, the React files will be served from this directory

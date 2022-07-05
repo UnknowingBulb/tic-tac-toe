@@ -5,6 +5,8 @@ using Newtonsoft.Json;
 using XOX.Enums;
 using System;
 using Microsoft.AspNetCore.Http;
+using XOX.Services;
+using System.Threading.Tasks;
 
 namespace XOX.Controllers
 {
@@ -12,11 +14,11 @@ namespace XOX.Controllers
     [Route("session")]
     public class SessionController : ControllerBase
     {
-        private readonly ILogger<SessionController> _logger;
+        private INotificationsService _notificationsService;
 
-        public SessionController(ILogger<SessionController> logger)
+        public SessionController(INotificationsService notificationsService)
         {
-            _logger = logger;
+            _notificationsService = notificationsService;
         }
 
         [HttpGet]
@@ -63,9 +65,9 @@ namespace XOX.Controllers
         }
 
         [HttpPost, Route("/setMark")]
-        public IActionResult SetMark(int sessionId, int x, int y)
+        public async Task<IActionResult> SetMark(int sessionId, int x, int y)
         {
-            Session session = SessionListHandler.GetSession(sessionId);;
+            Session session = SessionListHandler.GetSession(sessionId);
             if (session == null)
                 return NotFound("Игровая сессия не найдена");
             if (session.State == SessionState.Finished || session.State == SessionState.Undefined)
@@ -91,7 +93,10 @@ namespace XOX.Controllers
             else
                 session.State = SessionState.InProgress;
             SessionListHandler.AddSession(session);
-            return Ok(JsonConvert.SerializeObject(session));
+
+            string sessionJson = JsonConvert.SerializeObject(session);
+            await _notificationsService.SendNotificationAsync(sessionJson, $"session{sessionId}");
+            return Ok(sessionJson);
         }
 
         [HttpPost, Route("/finish")]

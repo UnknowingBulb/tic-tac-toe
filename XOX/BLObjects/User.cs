@@ -11,9 +11,6 @@ namespace XOX.BLObjects
         public string Name;
         public string Mark;
 
-        // TODO: создать нормально, а не как сейчас
-        public bool isFirst;
-
         public User(Guid id, string name, string mark)
         {
             Id = id;
@@ -21,6 +18,7 @@ namespace XOX.BLObjects
             Mark = mark;
         }
 
+        // TODO: создать нормально, а не как сейчас
         public User(Guid id, bool isFirst = false)
         {
             Id = id;
