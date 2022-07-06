@@ -27,7 +27,6 @@ export class FetchData extends Component {
         });
         const data = await response.json();
         this.setState({ data: data });
-        console.log(this.state.data.Id + " " + this.state.data);
     }
 
     async setMark(x, y) {
@@ -58,10 +57,8 @@ export class FetchData extends Component {
         var source = new EventSource('/session');
 
         source.onmessage = function (event) {
-            //setState({ data: event.data });
-            console.log('pss' + event.data);
-            this.setState({ data: event.data });
-        };
+            this.setState({ data: JSON.parse(event.data) });
+        }.bind(this);
     }
 
     render() {
@@ -70,7 +67,6 @@ export class FetchData extends Component {
                 <input type="number" id="sessionId"></input>
                 <button id="connect" onClick={() => this.connect(document.getElementById("sessionId").value)}>Connect</button>
                 <button id="start" onClick={() => this.start()}>Start</button>
-                {console.log(this.state.data)}
                 {this.state.data.Id == null ? (<div> </div>) : (this.renderPlayground(this.state.data))}
             </div>;
 
@@ -80,7 +76,6 @@ export class FetchData extends Component {
     async loadSession() {
         const response = await fetch('getSession?sessionId=' + this.state.data.Id);
         const data = await response.json();
-        console.log(data);
         this.setState({ data: data });
     }
 }
