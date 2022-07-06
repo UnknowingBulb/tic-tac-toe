@@ -77,7 +77,7 @@ namespace XOX
                     // Set up second (separated) Server-Sent Events endpoint.
                     endpoints.MapServerSentEvents<NotificationsServerSentEventsService>("/session");
 
-                    endpoints.MapControllerRoute("default", "{controller=Session}/{action=session}");
+                    endpoints.MapControllerRoute("default", "{controller=Session}/{action=session-reciever}");
                 });
 
             app.UseSpa(spa =>

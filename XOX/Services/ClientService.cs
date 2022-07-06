@@ -18,7 +18,6 @@ namespace XOX.Services
         {
             IServerSentEventsClient user = _notificationsServerSentEventsService.GetClient(userId);
             return _notificationsServerSentEventsService.AddToGroup(groupName, user);
-
         }
 
         public IReadOnlyCollection<IServerSentEventsClient> GetUsers()

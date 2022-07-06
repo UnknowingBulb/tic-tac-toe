@@ -23,21 +23,19 @@ namespace XOX.Controllers
         }
 
         [HttpGet, Route("/getSession")]
-        public IActionResult Get3(int sessionId)
+        public IActionResult GetSession(int sessionId)
         {
-            Guid userId = _cookies.AcquireClientId(HttpContext);
-            User user = UserListHandler.AddUser(new User(userId, true));
             Session session = SessionListHandler.GetSession(sessionId);
-           if (session == null)
-                session = new Session(user);
+            if (session == null)
+                return NotFound("Игровая сессия не найдена");
             return Ok(JsonConvert.SerializeObject(session));
         }
 
         [ActionName("session-reciever")]
         [AcceptVerbs("GET")]
-        public IActionResult Get2()
+        public IActionResult Get()
         {
-            return View("Receiver");
+            return LocalRedirect("/fetch-data");
         }
 
         [HttpPost, Route("/start")]
@@ -47,7 +45,7 @@ namespace XOX.Controllers
             User user = UserListHandler.AddUser(new User(userId, true));
             Session session = new Session(user);
             SessionListHandler.AddSession(session);
-            //_clientService.AddUserToGroup(userId, $"session{session.Id}");
+            _clientService.AddUserToGroup(userId, $"session{session.Id}");
             return Ok(JsonConvert.SerializeObject(session));
         }
 
@@ -62,7 +60,7 @@ namespace XOX.Controllers
             User user = UserListHandler.GetUser(userId);
             if (user == null)
                 user = UserListHandler.AddUser(new User(userId, false));
-            //Если свободных слотов нет
+            //If no empty slots
             if (!((session.Player1 == null || session.Player2 == null) ||
                 (session.Player1.Id == userId || session.Player2.Id == userId)))
                 return NotFound("Нет свободных слотов");
@@ -72,7 +70,7 @@ namespace XOX.Controllers
             else
                 session.Player2 = user;
             SessionListHandler.AddSession(session);
-            //_clientService.AddUserToGroup(userId, $"session{session.Id}");
+            _clientService.AddUserToGroup(userId, $"session{session.Id}");
             return Ok(JsonConvert.SerializeObject(session));
         }
 
@@ -88,7 +86,7 @@ namespace XOX.Controllers
             Guid userId = _cookies.AcquireClientId(HttpContext);
             if (session.Player1.Id == userId && session.Player2 == null)
                 return BadRequest("2й игрок не подключился, невозможно начать");
-            //Если свободных слотов нет
+            //If no empty slots
             if (!((session.Player1 == null || session.Player2 == null) ||
                 (session.Player1.Id == userId || session.Player2.Id == userId)))
                 return Unauthorized("Вы не участвуете в игре, можно только смотреть");

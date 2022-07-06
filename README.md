@@ -5,7 +5,7 @@ Here I'm learning how to work with HTML, css, reactJS, ASP.NET.
 
 ## TO-DO 
 		✔do some web front-end
-		- update play field on other player move
+		✔update play field on other player move
 		- do controllers async (where it's possible). Maybe won't be done
 		- database storage (sql, redis or smth else + Entity Framework?)
 		- show errors on front-end
