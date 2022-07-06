@@ -1,11 +1,12 @@
-﻿using XOX.Enums;
+﻿using System;
+using XOX.Enums;
 
 namespace XOX.BLObjects
 {
     public class Session
     {
-        public User Player1;
-        public User Player2;
+        public Guid Player1Id;
+        public Guid Player2Id;
         public Field Field;
         public SessionState State;
         public bool IsActivePlayer1;
@@ -17,7 +18,8 @@ namespace XOX.BLObjects
             State = SessionState.NotStarted;
             Field = new Field();
             Id = SessionListHandler.NewId;
-            Player1 = player;
+            Player1Id = player.Id;
+            Player2Id = Guid.Empty;
             IsActivePlayer1 = true;
         }
     }

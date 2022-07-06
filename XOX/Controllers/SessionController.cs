@@ -25,10 +25,12 @@ namespace XOX.Controllers
         [HttpGet, Route("/getSession")]
         public IActionResult GetSession(int sessionId)
         {
+            Guid userId = _cookies.AcquireClientId(HttpContext);
             Session session = SessionListHandler.GetSession(sessionId);
             if (session == null)
                 return NotFound("Игровая сессия не найдена");
-            return Ok(JsonConvert.SerializeObject(session));
+            SessionDto responseData = new SessionDto(session, userId);
+            return Ok(JsonConvert.SerializeObject(responseData));
         }
 
         [ActionName("session-reciever")]
@@ -46,7 +48,8 @@ namespace XOX.Controllers
             Session session = new Session(user);
             SessionListHandler.AddSession(session);
             _clientService.AddUserToGroup(userId, $"session{session.Id}");
-            return Ok(JsonConvert.SerializeObject(session));
+            SessionDto responseData = new SessionDto(session, userId);
+            return Ok(JsonConvert.SerializeObject(responseData));
         }
 
         [HttpPost, Route("/connect")]
@@ -58,20 +61,21 @@ namespace XOX.Controllers
 
             Guid userId = _cookies.AcquireClientId(HttpContext);
             User user = UserListHandler.GetUser(userId);
-            if (user == null)
+            if (user == null || (session.Player1Id != null && session.Player1Id != userId))
                 user = UserListHandler.AddUser(new User(userId, false));
             //If no empty slots
-            if (!((session.Player1 == null || session.Player2 == null) ||
-                (session.Player1.Id == userId || session.Player2.Id == userId)))
+            if (!((session.Player1Id == Guid.Empty || session.Player2Id == Guid.Empty) ||
+                (session.Player1Id == userId || session.Player2Id == userId)))
                 return NotFound("Нет свободных слотов");
 
-            if (session.Player1 == null || session.Player1.Id == userId)
-                session.Player1 = user;
+            if (session.Player1Id == Guid.Empty || session.Player1Id == userId)
+                session.Player1Id = user.Id;
             else
-                session.Player2 = user;
+                session.Player2Id = user.Id;
             SessionListHandler.AddSession(session);
             _clientService.AddUserToGroup(userId, $"session{session.Id}");
-            return Ok(JsonConvert.SerializeObject(session));
+            SessionDto responseData = new SessionDto(session, userId);
+            return Ok(JsonConvert.SerializeObject(responseData));
         }
 
         [HttpPost, Route("/setMark")]
@@ -84,18 +88,17 @@ namespace XOX.Controllers
                 return BadRequest("Игровая сессия завершена или не найдена");
 
             Guid userId = _cookies.AcquireClientId(HttpContext);
-            if (session.Player1.Id == userId && session.Player2 == null)
+            if (session.Player1Id == userId && session.Player2Id == Guid.Empty)
                 return BadRequest("2й игрок не подключился, невозможно начать");
             //If no empty slots
-            if (!((session.Player1 == null || session.Player2 == null) ||
-                (session.Player1.Id == userId || session.Player2.Id == userId)))
+            if (!((session.Player1Id == Guid.Empty || session.Player2Id == Guid.Empty) ||
+                (session.Player1Id == userId || session.Player2Id == userId)))
                 return Unauthorized("Вы не участвуете в игре, можно только смотреть");
 
             User user = UserListHandler.GetUser(userId);
 
-            if ((session.IsActivePlayer1 && session.Player1.Id != userId)||
-                (!session.IsActivePlayer1 && session.Player2.Id != userId ))
-                return BadRequest("Действие запрещено, не ваш ход");
+            if (session.Field.Cells[x, y].Value != string.Empty)
+                return BadRequest("Ячейка занята, попробуйте другую");
             session.Field.Cells[x, y].Value = user.Mark;
             session.IsActivePlayer1 = !session.IsActivePlayer1;
             if (session.Field.IsGameCompleted())
@@ -104,9 +107,9 @@ namespace XOX.Controllers
                 session.State = SessionState.InProgress;
             SessionListHandler.AddSession(session);
 
-            string sessionJson = JsonConvert.SerializeObject(session);
-            await _notificationsService.SendNotificationAsync(sessionJson, $"session{sessionId}");
-            return Ok(sessionJson);
+            string responseDataJson = JsonConvert.SerializeObject(new SessionDto(session, userId));
+            await _notificationsService.SendNotificationAsync(responseDataJson, $"session{sessionId}");
+            return Ok(responseDataJson);
         }
 
         [HttpPost, Route("/finish")]
