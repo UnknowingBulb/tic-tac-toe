@@ -20,6 +20,7 @@ namespace XOX.Services
             if (notificationsServiceType.Equals(NOTIFICATIONS_SERVICE_TYPE_LOCAL, StringComparison.InvariantCultureIgnoreCase))
             {
                 services.AddTransient<INotificationsService, LocalNotificationsService>();
+                services.AddTransient<IClientService, ClientService>();
             }
             else if (notificationsServiceType.Equals(NOTIFICATIONS_SERVICE_TYPE_REDIS, StringComparison.InvariantCultureIgnoreCase))
             {

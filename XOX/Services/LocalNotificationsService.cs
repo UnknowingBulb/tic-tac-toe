@@ -1,4 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using Lib.AspNetCore.ServerSentEvents;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace XOX.Services
 {
@@ -14,6 +17,21 @@ namespace XOX.Services
         public Task SendNotificationAsync(string notification, string group)
         {
             return SendSseEventAsync(notification, group);
+        }
+
+        public ServerSentEventsAddToGroupResult AddUserToGroup(Guid userId, string groupName)
+        {
+            return AddUserToGroup1(userId, groupName);
+
+        }
+
+        public IReadOnlyCollection<IServerSentEventsClient> GetUsers()
+        {
+            return GetUsers1();
+        }
+        public IReadOnlyCollection<IServerSentEventsClient> GetUsers(string groupName)
+        {
+            return GetUsers1(groupName);
         }
         #endregion
     }

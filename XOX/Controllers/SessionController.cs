@@ -1,42 +1,53 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using XOX.BLObjects;
 using Newtonsoft.Json;
 using XOX.Enums;
 using System;
-using Microsoft.AspNetCore.Http;
 using XOX.Services;
 using System.Threading.Tasks;
+using Lib.AspNetCore.ServerSentEvents;
 
 namespace XOX.Controllers
 {
-    [ApiController]
-    [Route("session")]
-    public class SessionController : ControllerBase
+    public class SessionController : Controller
     {
         private INotificationsService _notificationsService;
+        private IClientService _clientService;
+        private IServerSentEventsClientIdProvider _cookies;
 
-        public SessionController(INotificationsService notificationsService)
+        public SessionController(INotificationsService notificationsService, IClientService clientService, IServerSentEventsClientIdProvider cookies)
         {
             _notificationsService = notificationsService;
+            _clientService = clientService;
+            _cookies = cookies;
         }
 
-        [HttpGet]
-        public IActionResult Get(int sessionId)
+        [HttpGet, Route("/getSession")]
+        public IActionResult Get3(int sessionId)
         {
+            Guid userId = _cookies.AcquireClientId(HttpContext);
+            User user = UserListHandler.AddUser(new User(userId, true));
             Session session = SessionListHandler.GetSession(sessionId);
-            if (session == null)
-                return NotFound("Игровая сессия не найдена");
+           if (session == null)
+                session = new Session(user);
             return Ok(JsonConvert.SerializeObject(session));
+        }
+
+        [ActionName("session-reciever")]
+        [AcceptVerbs("GET")]
+        public IActionResult Get2()
+        {
+            return View("Receiver");
         }
 
         [HttpPost, Route("/start")]
         public IActionResult StartSession()
         {
-            Guid userId = setAuth();
+            Guid userId = _cookies.AcquireClientId(HttpContext);
             User user = UserListHandler.AddUser(new User(userId, true));
             Session session = new Session(user);
             SessionListHandler.AddSession(session);
+            //_clientService.AddUserToGroup(userId, $"session{session.Id}");
             return Ok(JsonConvert.SerializeObject(session));
         }
 
@@ -47,7 +58,7 @@ namespace XOX.Controllers
             if (session == null)
                 return NotFound("Игровая сессия не найдена");
 
-            Guid userId = setAuth();
+            Guid userId = _cookies.AcquireClientId(HttpContext);
             User user = UserListHandler.GetUser(userId);
             if (user == null)
                 user = UserListHandler.AddUser(new User(userId, false));
@@ -61,6 +72,7 @@ namespace XOX.Controllers
             else
                 session.Player2 = user;
             SessionListHandler.AddSession(session);
+            //_clientService.AddUserToGroup(userId, $"session{session.Id}");
             return Ok(JsonConvert.SerializeObject(session));
         }
 
@@ -73,7 +85,7 @@ namespace XOX.Controllers
             if (session.State == SessionState.Finished || session.State == SessionState.Undefined)
                 return BadRequest("Игровая сессия завершена или не найдена");
 
-            Guid userId = setAuth();
+            Guid userId = _cookies.AcquireClientId(HttpContext);
             if (session.Player1.Id == userId && session.Player2 == null)
                 return BadRequest("2й игрок не подключился, невозможно начать");
             //Если свободных слотов нет
@@ -104,38 +116,6 @@ namespace XOX.Controllers
         {
             SessionListHandler.Remove(sessionId);
             return Ok();
-        }
-
-        private Guid getAuth()
-        {
-            var context = HttpContext;
-            string userId = context.Request.Cookies["user-id"];
-
-            if (userId == null)
-                return Guid.Empty;
-            return Guid.Parse(userId);
-        }
-
-        private Guid setAuth()
-        {
-            Guid userId = getAuth();
-            if (userId != Guid.Empty)
-                return userId;
-
-            userId = Guid.NewGuid();
-            // Method 2 - Add to current context
-            var context = HttpContext;
-            var cookieOptions = new CookieOptions()
-            {
-                Path = "/",
-                Expires = DateTimeOffset.UtcNow.AddHours(20),
-                IsEssential = true,
-                HttpOnly = false,
-                Secure = false,
-            };
-
-            context.Response.Cookies.Append("user-id", userId.ToString(), cookieOptions);
-            return userId;
         }
     }
 }

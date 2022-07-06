@@ -5,11 +5,12 @@ export class FetchData extends Component {
 
     constructor(props) {
         super(props);
-        this.state = { data: Object, loading: true };
+        this.state = { data: Object };
     }
 
     componentDidMount() {
         this.loadSession();
+        this.updatePlayground();
     }
 
     async connect(sessionId) {
@@ -17,7 +18,7 @@ export class FetchData extends Component {
             method: "POST",
         });
         const data = await response.json();
-        this.setState({ data: data, loading: false });
+        this.setState({ data: data });
     }
 
     async start() {
@@ -25,7 +26,8 @@ export class FetchData extends Component {
             method: "POST",
         });
         const data = await response.json();
-        this.setState({ data: data, loading: false });
+        this.setState({ data: data });
+        console.log(this.state.data.Id + " " + this.state.data);
     }
 
     async setMark(x, y) {
@@ -33,11 +35,10 @@ export class FetchData extends Component {
             method: "POST",
         });
         const data = await response.json();
-        this.setState({ data: data, loading: false });
+        this.setState({ data: data });
     }
 
     renderPlayground(data) {
-        console.log('pss' + this.state.data.Id);
         let isNotCreated = this.state.data.Id == null;
         let content = isNotCreated ? (<div></div>) : (
             <table className='playground' aria-labelledby="tabelLabel">
@@ -53,30 +54,33 @@ export class FetchData extends Component {
         return content;
     }
 
+    updatePlayground() {
+        var source = new EventSource('/session');
+
+        source.onmessage = function (event) {
+            //setState({ data: event.data });
+            console.log('pss' + event.data);
+            this.setState({ data: event.data });
+        };
+    }
+
     render() {
-        let isNotCreated = this.state.data.Id == null;
-        let contents = this.state.loading
-            ?
-            <div>
-                <h1 id="tabelLabel">Wait pls</h1>
-                <p><em>Loading...</em></p>
-            </div>
-            :
+        let contents = 
             <div>
                 <input type="number" id="sessionId"></input>
                 <button id="connect" onClick={() => this.connect(document.getElementById("sessionId").value)}>Connect</button>
                 <button id="start" onClick={() => this.start()}>Start</button>
                 {console.log(this.state.data)}
-                {isNotCreated ? (<div></div>) : (this.renderPlayground(this.state.data))}
+                {this.state.data.Id == null ? (<div> </div>) : (this.renderPlayground(this.state.data))}
             </div>;
 
         return (contents);
     }
 
     async loadSession() {
-        const response = await fetch('session?sessionId=' + this.state.data.Id);
+        const response = await fetch('getSession?sessionId=' + this.state.data.Id);
         const data = await response.json();
         console.log(data);
-        this.setState({ data: data, loading: false });
+        this.setState({ data: data });
     }
 }

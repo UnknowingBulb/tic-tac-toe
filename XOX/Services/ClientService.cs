@@ -5,11 +5,11 @@ using System.Collections.Generic;
 
 namespace XOX.Services
 {
-    internal class ClientService
+    internal class ClientService : IClientService
     {
         private INotificationsServerSentEventsService _notificationsServerSentEventsService;
 
-        protected ClientService(INotificationsServerSentEventsService notificationsServerSentEventsService)
+        public ClientService(INotificationsServerSentEventsService notificationsServerSentEventsService)
         {
             _notificationsServerSentEventsService = notificationsServerSentEventsService;
         }
