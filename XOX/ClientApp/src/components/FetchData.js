@@ -34,18 +34,62 @@ export class FetchData extends Component {
     }
 
     renderPlayground(data) {
-        let isNotCreated = false;
-        let content = isNotCreated ? (<div></div>) : (
-            <table className='playground' aria-labelledby='tabelLabel'>
-                <tbody>
-                    {data.Field.Cells.map((row) =>
-                        <tr key={row[0].x}>{row.map((cell) =>
-                            <td key={cell.x + '' + cell.y} onClick={() => this.setMark(cell.x, cell.y)}> {cell.Value}</td>)}
-                        </tr>
-                    )}
-                </tbody>
-            </table>
-        );
+        let content = 
+            <div>
+                {this.renderPlayers(data)}
+                <table className='playground' aria-labelledby='tableLabel'>
+                    <tbody>
+                        {data.Field.Cells.map((row) =>
+                            <tr key={row[0].x}>{row.map((cell) =>
+                                <td key={cell.x + '' + cell.y} onClick={() => this.setMark(cell.x, cell.y)}> {cell.Value}</td>)}
+                            </tr>
+                        )}
+                    </tbody>
+                </table>
+            </div>
+        return content;
+    }
+
+    renderPlayers(data) {
+        console.log('i tried');
+        let playerCurrent = '';
+        let playerAnother = '';
+        if (data.Player1 != null && data.CurrentUser === data.Player1.Id) {
+            playerCurrent = data.Player1;
+            playerAnother = data.Player2;
+        }
+        else if (data.Player2 != null && data.CurrentUser === data.Player2.Id) {
+            playerCurrent = data.Player2;
+            playerAnother = data.Player1;
+        }
+        let content = 
+            <section className='row' aria-labelledby='playersLabel'>
+                {
+                (playerCurrent == null) ? (
+                    <div>
+                        <div id='Player1' className='column'>{this.renderPlayer(data.Player1)}</div>
+                        <div id='Player2' className='column'>{this.renderPlayer(data.Player2)}</div>
+                    </div>
+                )
+                    : (
+                    <div>
+                        <div id='PlayerCurrent' className='column'>{this.renderPlayer(playerCurrent)}</div>
+                        <div id='Player2' className='column'>{this.renderPlayer(playerAnother)}</div>
+                    </div>
+                )
+                }
+            </section>
+        return content;
+    }
+
+    renderPlayer(playerData) {
+        if (playerData == null)
+            return <div></div>;
+        let content =
+            <div>
+                <div id='Name'>{playerData.Name}</div>
+                <div id='Mark'>{playerData.Mark}</div>
+            </div>
         return content;
     }
 

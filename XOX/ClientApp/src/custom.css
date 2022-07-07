@@ -79,3 +79,11 @@ table {
 .error {
     color: #E01A76;
 }
+
+.row {
+    display: flex;
+}
+
+.column {
+    flex: 50%;
+}
