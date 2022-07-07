@@ -11,10 +11,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="emoji-uid-dotnet" Version="1.0.0" />
     <PackageReference Include="Lib.AspNetCore.ServerSentEvents" Version="8.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="5.0.17" />
     <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="3.1.8" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="RandomFriendlyNameGenerator" Version="1.0.7" />
   </ItemGroup>
 
   <ItemGroup>

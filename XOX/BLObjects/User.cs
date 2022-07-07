@@ -1,4 +1,5 @@
-﻿using System;
+﻿using emoji_dotnet;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -10,6 +11,8 @@ namespace XOX.BLObjects
         public Guid Id;
         public string Name;
         public string Mark;
+        //TODO: do calculations when db will be done
+        public bool HasActiveSessions = false;
 
         public User(Guid id, string name, string mark)
         {
@@ -19,11 +22,11 @@ namespace XOX.BLObjects
         }
 
         // TODO: создать нормально, а не как сейчас
-        public User(Guid id, bool isFirst = false)
+        public User(Guid id)
         {
             Id = id;
-            Name = isFirst ? "Player1" : "Player2";
-            Mark = isFirst ? "🙄" : "😡";
+            Name = RandomFriendlyNameGenerator.NameGenerator.Identifiers.Get();
+            Mark = EmojiUid.Generate(1);;
         }
     }
 }

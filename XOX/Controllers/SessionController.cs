@@ -44,7 +44,9 @@ namespace XOX.Controllers
         public IActionResult StartSession()
         {
             Guid userId = _cookies.AcquireClientId(HttpContext);
-            User user = UserListHandler.AddUser(new User(userId, true));
+            User user = UserListHandler.GetUser(userId);
+            if (user == null)
+                user = UserListHandler.AddUser(new User(userId));
             Session session = new Session(user);
             SessionListHandler.AddSession(session);
             _clientService.AddUserToGroup(userId, $"session{session.Id}");
@@ -53,7 +55,7 @@ namespace XOX.Controllers
         }
 
         [HttpPost, Route("/connect")]
-        public IActionResult Connect(int sessionId)
+        public async Task<IActionResult> Connect(int sessionId)
         {
             Session session = SessionListHandler.GetSession(sessionId);
             if (session == null)
@@ -61,21 +63,34 @@ namespace XOX.Controllers
 
             Guid userId = _cookies.AcquireClientId(HttpContext);
             User user = UserListHandler.GetUser(userId);
-            if (user == null || (session.Player1Id != null && session.Player1Id != userId))
-                user = UserListHandler.AddUser(new User(userId, false));
+            if (user == null)
+                user = UserListHandler.AddUser(new User(userId));
             //If no empty slots
             if (!((session.Player1Id == Guid.Empty || session.Player2Id == Guid.Empty) ||
                 (session.Player1Id == userId || session.Player2Id == userId)))
                 return NotFound("Нет свободных слотов");
 
-            if (session.Player1Id == Guid.Empty || session.Player1Id == userId)
+            if (session.Player1Id == Guid.Empty && session.Player2Id != user.Id)
+            {
+                if (UserListHandler.GetUser(session.Player2Id).Mark == user.Mark)
+                {
+                    return BadRequest("Совпадает метка с уже участвующим игроком. Измените свою метку и попробуйте снова");
+                }
                 session.Player1Id = user.Id;
-            else
+            }
+            else if (session.Player2Id == Guid.Empty && session.Player1Id != user.Id)
+            {
+                if (UserListHandler.GetUser(session.Player1Id).Mark == user.Mark)
+                {
+                    return BadRequest("Совпадает метка с уже участвующим игроком. Измените свою метку и попробуйте снова");
+                }
                 session.Player2Id = user.Id;
+            }
             SessionListHandler.AddSession(session);
             _clientService.AddUserToGroup(userId, $"session{session.Id}");
-            SessionDto responseData = new SessionDto(session, userId);
-            return Ok(JsonConvert.SerializeObject(responseData));
+            string responseDataJson = JsonConvert.SerializeObject(new SessionDto(session, userId));
+            await _notificationsService.SendNotificationAsync(responseDataJson, $"session{sessionId}");
+            return Ok(responseDataJson);
         }
 
         [HttpPost, Route("/setMark")]

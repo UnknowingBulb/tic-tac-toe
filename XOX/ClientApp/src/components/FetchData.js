@@ -51,7 +51,6 @@ export class FetchData extends Component {
     }
 
     renderPlayers(data) {
-        console.log('i tried');
         let playerCurrent = '';
         let playerAnother = '';
         if (data.Player1 != null && data.CurrentUser === data.Player1.Id) {
@@ -97,7 +96,11 @@ export class FetchData extends Component {
         var source = new EventSource('/session');
 
         source.onmessage = function (event) {
-            this.setState({ data: JSON.parse(event.data) });
+            //don't want to handle this on backend, so not gonna change current user id on event
+            //back returns user which triggered event
+            let data = JSON.parse(event.data)
+            data.CurrentUser = this.state.data.CurrentUser;
+            this.setState({ data: data });
         }.bind(this);
     }
 
