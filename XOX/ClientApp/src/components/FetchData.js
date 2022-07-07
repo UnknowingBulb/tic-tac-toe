@@ -5,10 +5,11 @@ export class FetchData extends Component {
 
     constructor(props) {
         super(props);
-        this.state = { data: Object , error: ''};
+        this.state = { data: Object , currentPlayer: Object , error: ''};
     }
 
     componentDidMount() {
+        this.getUser();
         this.updatePlayground();
     }
 
@@ -50,14 +51,22 @@ export class FetchData extends Component {
         return content;
     }
 
+    renderNoSessionPlayer() {
+        let content =
+            <div>
+                {this.renderPlayer(this.state.currentPlayer)}
+            </div>
+        return content;
+    }
+
     renderPlayers(data) {
         let playerCurrent = '';
         let playerAnother = '';
-        if (data.Player1 != null && data.CurrentUser === data.Player1.Id) {
+        if (data.Player1 != null && this.state.currentPlayer.Id === data.Player1.Id) {
             playerCurrent = data.Player1;
             playerAnother = data.Player2;
         }
-        else if (data.Player2 != null && data.CurrentUser === data.Player2.Id) {
+        else if (data.Player2 != null && this.state.currentPlayer.Id === data.Player2.Id) {
             playerCurrent = data.Player2;
             playerAnother = data.Player1;
         }
@@ -96,11 +105,7 @@ export class FetchData extends Component {
         var source = new EventSource('/session');
 
         source.onmessage = function (event) {
-            //don't want to handle this on backend, so not gonna change current user id on event
-            //back returns user which triggered event
-            let data = JSON.parse(event.data)
-            data.CurrentUser = this.state.data.CurrentUser;
-            this.setState({ data: data });
+            this.setState({ data: JSON.parse(event.data) });
         }.bind(this);
     }
 
@@ -111,7 +116,7 @@ export class FetchData extends Component {
                 <button id='connect' onClick={() => this.connect(document.getElementById('sessionId').value)}>Connect</button>
                 <button id='start' onClick={() => this.start()}>Start</button>
                 <div id='error' key='error' className='error'>{this.state.error}</div>
-                {((this.state.data == null) || (this.state.data.Id == null)) ? (<div> </div>) : (this.renderPlayground(this.state.data))}
+                {((this.state.data == null) || (this.state.data.Id == null)) ? (this.renderNoSessionPlayer()) : (this.renderPlayground(this.state.data))}
             </div>;
 
         return (contents);
@@ -120,6 +125,11 @@ export class FetchData extends Component {
     async loadSession() {
         const response = await fetch('getSession?sessionId=' + this.state.data.Id);
         await this.proceedDataResponse(response);
+    }
+
+    async getUser() {
+        const response = await fetch('getOrCreate');
+        this.setState({ currentPlayer: await response.json(), error: null });
     }
 
     async proceedDataResponse(response) {

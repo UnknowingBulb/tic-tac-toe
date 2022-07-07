@@ -8,7 +8,9 @@ Here I'm learning how to work with HTML, css, reactJS, ASP.NET.
 		✔ update play field on other player move
 		- database storage (sql, redis or smth else + Entity Framework?)
 		✔ show errors on front-end
-		- allow to user input on user creation (for now it's hardcode)
+		- allow to user input on user creation (backend is mostly done, need to do frontend)
+		- finish game with draw
+		- show winner (or draw)
 		- do cool front-end styles (css)
 		- do controllers async (where it's possible). Maybe won't be done
 		- disconnect from current sse-group on session change

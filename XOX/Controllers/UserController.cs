@@ -1,12 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using XOX.BLObjects;
 using Newtonsoft.Json;
-using XOX.Enums;
 using System;
 using XOX.Services;
-using System.Threading.Tasks;
 using Lib.AspNetCore.ServerSentEvents;
-using emoji_dotnet;
 
 namespace XOX.Controllers
 {
@@ -39,7 +36,7 @@ namespace XOX.Controllers
             Guid userId = _cookies.AcquireClientId(HttpContext);
             User user = UserListHandler.GetUser(userId);
             if (user == null)
-                user = new User(userId);
+                user = UserListHandler.AddUser(new User(userId));
             return Ok(JsonConvert.SerializeObject(user));
         }
 

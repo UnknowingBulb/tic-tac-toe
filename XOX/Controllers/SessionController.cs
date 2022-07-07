@@ -29,7 +29,7 @@ namespace XOX.Controllers
             Session session = SessionListHandler.GetSession(sessionId);
             if (session == null)
                 return NotFound("Игровая сессия не найдена");
-            SessionDto responseData = new SessionDto(session, userId);
+            SessionDto responseData = new SessionDto(session);
             return Ok(JsonConvert.SerializeObject(responseData));
         }
 
@@ -50,7 +50,7 @@ namespace XOX.Controllers
             Session session = new Session(user);
             SessionListHandler.AddSession(session);
             _clientService.AddUserToGroup(userId, $"session{session.Id}");
-            SessionDto responseData = new SessionDto(session, userId);
+            SessionDto responseData = new SessionDto(session);
             return Ok(JsonConvert.SerializeObject(responseData));
         }
 
@@ -88,7 +88,7 @@ namespace XOX.Controllers
             }
             SessionListHandler.AddSession(session);
             _clientService.AddUserToGroup(userId, $"session{session.Id}");
-            string responseDataJson = JsonConvert.SerializeObject(new SessionDto(session, userId));
+            string responseDataJson = JsonConvert.SerializeObject(new SessionDto(session));
             await _notificationsService.SendNotificationAsync(responseDataJson, $"session{sessionId}");
             return Ok(responseDataJson);
         }
@@ -110,10 +110,13 @@ namespace XOX.Controllers
                 (session.Player1Id == userId || session.Player2Id == userId)))
                 return Unauthorized("Вы не участвуете в игре, можно только смотреть");
 
-            User user = UserListHandler.GetUser(userId);
-
+            if ((session.IsActivePlayer1 && session.Player1Id != userId) ||
+                (!session.IsActivePlayer1 && session.Player2Id != userId))
+                return BadRequest("Действие запрещено, не ваш ход");
             if (session.Field.Cells[x, y].Value != string.Empty)
                 return BadRequest("Ячейка занята, попробуйте другую");
+
+            User user = UserListHandler.GetUser(userId);
             session.Field.Cells[x, y].Value = user.Mark;
             session.IsActivePlayer1 = !session.IsActivePlayer1;
             if (session.Field.IsGameCompleted())
@@ -122,7 +125,7 @@ namespace XOX.Controllers
                 session.State = SessionState.InProgress;
             SessionListHandler.AddSession(session);
 
-            string responseDataJson = JsonConvert.SerializeObject(new SessionDto(session, userId));
+            string responseDataJson = JsonConvert.SerializeObject(new SessionDto(session));
             await _notificationsService.SendNotificationAsync(responseDataJson, $"session{sessionId}");
             return Ok(responseDataJson);
         }
