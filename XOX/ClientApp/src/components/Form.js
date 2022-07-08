@@ -1,18 +1,16 @@
 import React from 'react';
 
-export const Form = ({ onSubmit }) => {
+export const Form = ({ user, onSubmit }) => {
     return (
         <form onSubmit={ onSubmit }>
             <div className="form-group">
                 <label htmlFor="name">Name</label>
-                <input className="form-control" id="name" />
+                <input className="form-control" id="name" defaultValue={user.Name} />
             </div>
 
             <div className="form-group">
                 <label htmlFor="mark">Mark</label>
-                <input className="form-control" id="mark"
-                    placeholder="X"
-                />
+                <input className="form-control" id="mark" defaultValue={user.Mark} />
             </div>
 
             <div className="form-group">

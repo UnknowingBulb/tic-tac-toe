@@ -42,6 +42,7 @@ export class Container extends Component {
                         closeModal={this.closeModal}
                         onKeyDown={this.onKeyDown}
                         onClickOutside={this.onClickOutside}
+                        user={this.props.user}
                     />
                 ) : null}
             </React.Fragment>

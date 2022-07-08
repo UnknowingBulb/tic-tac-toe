@@ -44,10 +44,10 @@ namespace XOX.Controllers
         [HttpPost, Route("/change")]
         public IActionResult Change(string name, string mark)
         {
-            if (new StringInfo(mark).LengthInTextElements != 1)
-                return BadRequest("Метка должна быть 1 символом");
+            if (new StringInfo(mark).LengthInTextElements > 1)
+                return BadRequest("Изменение не выполнено. Метка должна быть 1 символом");
             if (name.Length > 50)
-                return BadRequest("Имя должно быть не длиннее 50 символов");
+                return BadRequest("Изменение не выполнено. Имя должно быть не длиннее 50 символов");
             Guid userId = _cookies.AcquireClientId(HttpContext);
             User user = UserListHandler.GetUser(userId);
             if (user == null)

@@ -98,7 +98,7 @@ export class FetchData extends Component {
             <div>
                 <div id='Name'>{playerData.Name}</div>
                 <div><div id='Mark'>{playerData.Mark}</div>{(!isStarted) ?
-                    <Container onSubmit={(event)=> this.change(event)} /> : <div></div>}
+                    <Container user={this.state.currentPlayer} onSubmit={(event) => this.change(event)} /> : <div></div>}
                 </div>
             </div>
         return content;
