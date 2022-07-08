@@ -1,11 +1,12 @@
-import React, { Component } from 'react';
+﻿import React, { Component } from 'react';
+import { Container } from './Container';
 
 export class FetchData extends Component {
     static displayName = FetchData.name;
 
     constructor(props) {
         super(props);
-        this.state = { data: Object , currentPlayer: Object , error: ''};
+        this.state = { data: Object, currentPlayer: Object, error: '' };
     }
 
     componentDidMount() {
@@ -35,7 +36,7 @@ export class FetchData extends Component {
     }
 
     renderPlayground(data) {
-        let content = 
+        let content =
             <div>
                 {this.renderPlayers(data)}
                 <table className='playground' aria-labelledby='tableLabel'>
@@ -54,7 +55,7 @@ export class FetchData extends Component {
     renderNoSessionPlayer() {
         let content =
             <div>
-                {this.renderPlayer(this.state.currentPlayer)}
+                {this.renderPlayer(this.state.currentPlayer, false)}
             </div>
         return content;
     }
@@ -70,33 +71,35 @@ export class FetchData extends Component {
             playerCurrent = data.Player2;
             playerAnother = data.Player1;
         }
-        let content = 
+        let content =
             <section className='row' aria-labelledby='playersLabel'>
                 {
-                (playerCurrent == null) ? (
-                    <div>
-                        <div id='Player1' className='column'>{this.renderPlayer(data.Player1)}</div>
-                        <div id='Player2' className='column'>{this.renderPlayer(data.Player2)}</div>
-                    </div>
-                )
-                    : (
-                    <div>
-                        <div id='PlayerCurrent' className='column'>{this.renderPlayer(playerCurrent)}</div>
-                        <div id='Player2' className='column'>{this.renderPlayer(playerAnother)}</div>
-                    </div>
-                )
+                    (playerCurrent == null) ? (
+                        <div>
+                            <div id='Player1' className='column'>{this.renderPlayer(data.Player1)}</div>
+                            <div id='Player2' className='column'>{this.renderPlayer(data.Player2)}</div>
+                        </div>
+                    )
+                        : (
+                            <div>
+                                <div id='PlayerCurrent' className='column'>{this.renderPlayer(playerCurrent)}</div>
+                                <div id='Player2' className='column'>{this.renderPlayer(playerAnother)}</div>
+                            </div>
+                        )
                 }
             </section>
         return content;
     }
 
-    renderPlayer(playerData) {
+    renderPlayer(playerData, isStarted = true) {
         if (playerData == null)
             return <div></div>;
         let content =
             <div>
                 <div id='Name'>{playerData.Name}</div>
-                <div id='Mark'>{playerData.Mark}</div>
+                <div><div id='Mark'>{playerData.Mark}</div>{(!isStarted) ?
+                    <Container onSubmit={(event)=> this.change(event)} /> : <div></div>}
+                </div>
             </div>
         return content;
     }
@@ -110,7 +113,7 @@ export class FetchData extends Component {
     }
 
     render() {
-        let contents = 
+        let contents =
             <div>
                 <input type='number' id='sessionId'></input>
                 <button id='connect' onClick={() => this.connect(document.getElementById('sessionId').value)}>Connect</button>
@@ -132,8 +135,17 @@ export class FetchData extends Component {
         this.setState({ currentPlayer: await response.json(), error: null });
     }
 
+    async change(event) {
+        event.preventDefault(event);
+        console.log(event.target.name);
+        console.log(event.target.mark);
+        const response = await fetch('change?name=' + event.target.name.value + '&mark=' + event.target.mark.value, {
+            method: 'POST',
+        });
+        await this.proceedUserDataResponse(response);
+    }
+
     async proceedDataResponse(response) {
-        console.log(response);
         if (response.status >= 500) {
             this.setState({ data: this.state.data, error: "Internal server error: " + response.status });
         }
@@ -142,6 +154,18 @@ export class FetchData extends Component {
         }
         else {
             this.setState({ data: await response.json(), error: null });
+        }
+    }
+
+    async proceedUserDataResponse(response) {
+        if (response.status >= 500) {
+            this.setState({ currentPlayer: this.state.currentPlayer, error: "Internal server error: " + response.status });
+        }
+        else if (response.status >= 400) {
+            this.setState({ currentPlayer: this.state.currentPlayer, error: await response.text() });
+        }
+        else {
+            this.setState({ currentPlayer: await response.json(), error: null });
         }
     }
 }

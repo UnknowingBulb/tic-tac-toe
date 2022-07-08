@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using System;
 using XOX.Services;
 using Lib.AspNetCore.ServerSentEvents;
+using System.Globalization;
 
 namespace XOX.Controllers
 {
@@ -43,6 +44,10 @@ namespace XOX.Controllers
         [HttpPost, Route("/change")]
         public IActionResult Change(string name, string mark)
         {
+            if (new StringInfo(mark).LengthInTextElements != 1)
+                return BadRequest("Метка должна быть 1 символом");
+            if (name.Length > 50)
+                return BadRequest("Имя должно быть не длиннее 50 символов");
             Guid userId = _cookies.AcquireClientId(HttpContext);
             User user = UserListHandler.GetUser(userId);
             if (user == null)
@@ -54,8 +59,10 @@ namespace XOX.Controllers
             }
             else
             {
-                user.Name = name;
-                user.Mark = mark;
+                if(!string.IsNullOrEmpty(name))
+                    user.Name = name;
+                if (!string.IsNullOrEmpty(mark))
+                    user.Mark = mark;
             }
             UserListHandler.AddUser(user);
             return Ok(JsonConvert.SerializeObject(new User(userId, name, mark)));
