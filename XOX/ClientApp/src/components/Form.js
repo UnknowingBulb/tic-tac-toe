@@ -1,14 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
 import EmojiPicker from './EmojiPicker';
 
-function ClickOutside(ref, onClickOutside) {
+export const Form = ({ user, onSubmit }) => {
+
+    let [open, setOpen] = useState(false);
+    const wrapperRef = useRef("emojiMenu");
+
     useEffect(() => {
         /**
          * Invoke Function onClick outside of element
          */
         function handleClickOutside(event) {
-            if (ref.current && !ref.current.contains(event.target)) {
-                onClickOutside();
+            if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
+                setOpen(false);
             }
         }
         // Bind
@@ -17,19 +21,13 @@ function ClickOutside(ref, onClickOutside) {
             // dispose
             document.removeEventListener("mousedown", handleClickOutside);
         };
-    }, [ref, onClickOutside]);
-}
-export const Form = ({ user, onSubmit }) => {
-
-    let [open, setOpen] = useState(false);
-    const wrapperRef = useRef("menu");
-    ClickOutside(wrapperRef, () => {
-        setOpen(false);
     });
 
-    const onEmojiSelect = (event) => {
-        console.log(event);
+    const onEmojiSelect = e => {
+        // Close the picker modal
         setOpen(false);
+        //e.name.value = e.native;
+        console.log(e.native);
     }
 
     return (
@@ -41,11 +39,11 @@ export const Form = ({ user, onSubmit }) => {
 
             <div className="form-group">
                 <label htmlFor="mark">Mark</label>
-                <input className="form-control" id="mark" defaultValue={user.Mark} onClick={() => { console.log("fu"); setOpen(true) }} />
+                <input className="form-control" id="mark" defaultValue={user.Mark} onClick={() => setOpen(true)} />
             </div>
             <div ref={wrapperRef}>
                 {open &&
-                    <EmojiPicker id='picker' onEmojiSelect={(event) => { console.log("rrr"); onEmojiSelect(event) }} />}
+                    <EmojiPicker id="picker" onEmojiSelect={onEmojiSelect} />}
             </div>
             <div className="form-group">
                 <button className="form-control btn btn-primary" type="submit">

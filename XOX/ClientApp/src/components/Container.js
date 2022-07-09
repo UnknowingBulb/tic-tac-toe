@@ -1,15 +1,32 @@
-import React, { Component } from 'react';
-import { Modal } from './Modal';
+import React, { Component, createRef } from 'react';
+import { Form } from './Form';
 import TriggerButton from './TriggerButton';
 
 export class Container extends Component {
     state = { isShown: false };
+    constructor(props) {
+        super(props);
+        this.wrapperRef = createRef();
+        this.handleClickOutside = this.handleClickOutside.bind(this);
+    }
+
+    componentDidMount() {
+        document.addEventListener("mousedown", this.handleClickOutside);
+    }
+
+    componentWillUnmount() {
+        document.removeEventListener("mousedown", this.handleClickOutside);
+    }
 
     showModal = () => {
-        this.setState({ isShown: true }, () => {
-            this.closeButton.focus();
-        });
+        this.setState({ isShown: true });
     };
+
+    handleClickOutside(event) {
+        if (this.wrapperRef && !this.wrapperRef.current.contains(event.target)) {
+            this.setState({ isShown: false });
+        }
+    }
 
     closeModal = () => {
         this.setState({ isShown: false });
@@ -30,22 +47,16 @@ export class Container extends Component {
 
     render() {
         return (
-            <React.Fragment>
+            <div>
                 <TriggerButton
                     showModal={this.showModal}
                     buttonRef={(n) => (this.TriggerButton = n)}
-                />{this.state.isShown ? (
-                    <Modal
-                        onSubmit={(event) => { this.props.onSubmit(event); this.closeModal(); }}
-                        modalRef={(n) => (this.modal = n)}
-                        buttonRef={(n) => (this.closeButton = n)}
-                        closeModal={this.closeModal}
-                        onKeyDown={this.onKeyDown}
-                        onClickOutside={this.onClickOutside}
-                        user={this.props.user}
-                    />
-                ) : null}
-            </React.Fragment>
+                />
+                <div ref={this.wrapperRef} >{this.state.isShown ? (
+                    <Form user={this.props.user} onSubmit={(event) => { this.props.onSubmit(event); this.closeModal(); }} />
+
+                ) : null}</div>
+            </div>
         );
     }
 }
