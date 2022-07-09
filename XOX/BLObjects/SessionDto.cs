@@ -19,7 +19,7 @@ namespace XOX.BLObjects
             Field = session.Field;
             Id = session.Id;
             Player1 = UserListHandler.GetUser(session.Player1Id);
-            Player2 = session.Player2Id == null ? null: UserListHandler.GetUser(session.Player2Id);
+            Player2 = session.Player2Id == Guid.Empty ? null: UserListHandler.GetUser(session.Player2Id);
             IsActivePlayer1 = session.IsActivePlayer1;
         }
     }
