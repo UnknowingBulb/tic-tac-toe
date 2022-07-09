@@ -4,6 +4,7 @@ import EmojiPicker from './EmojiPicker';
 export const Form = ({ user, onSubmit }) => {
 
     let [open, setOpen] = useState(false);
+    let [mark, setMark] = useState(user.Mark);
     const wrapperRef = useRef("emojiMenu");
 
     useEffect(() => {
@@ -24,22 +25,25 @@ export const Form = ({ user, onSubmit }) => {
     });
 
     const onEmojiSelect = e => {
-        // Close the picker modal
         setOpen(false);
-        //e.name.value = e.native;
-        console.log(e.native);
+        setMark(e.native);
+    }
+
+    const onMarkChange = e => {
+        setOpen(false);
+        setMark(e.native);
     }
 
     return (
         <form onSubmit={onSubmit}>
             <div className="form-group">
                 <label htmlFor="name">Name</label>
-                <input className="form-control" id="name" defaultValue={user.Name} />
+                <input className="form-control" id="name" defaultValue={user.Name} maxLength="50" />
             </div>
 
             <div className="form-group">
                 <label htmlFor="mark">Mark</label>
-                <input className="form-control" id="mark" defaultValue={user.Mark} onClick={() => setOpen(true)} />
+                <input className="form-control" id="mark" value={mark} onClick={() => setOpen(true)} onChange={onMarkChange} maxLength="1" />
             </div>
             <div ref={wrapperRef}>
                 {open &&
