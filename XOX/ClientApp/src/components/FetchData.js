@@ -137,8 +137,6 @@ export class FetchData extends Component {
 
     async change(event) {
         event.preventDefault(event);
-        console.log(event.target.name);
-        console.log(event.target.mark);
         const response = await fetch('change?name=' + event.target.name.value + '&mark=' + event.target.mark.value, {
             method: 'POST',
         });

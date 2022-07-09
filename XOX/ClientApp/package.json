@@ -3,11 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "prop-types": "^15.8.1",
+    "@emoji-mart/data": "^1.0.2",
+    "emoji-mart": "^5.1.0",
     "focus-trap-react": "9.0.2",
     "jquery": "^3.6.0",
     "merge": "^1.2.1",
     "oidc-client": "^1.9.0",
+    "prop-types": "^15.8.1",
     "react": "^16.0.0",
     "react-dom": "^16.0.0",
     "react-router-dom": "^5.1.2",
@@ -16,6 +18,7 @@
     "rimraf": "^2.6.2"
   },
   "devDependencies": {
+    "@babel/plugin-proposal-class-properties": "^7.18.6",
     "ajv": "^6.12.6",
     "cross-env": "^5.2.0",
     "eslint": "^6.8.0",
@@ -37,6 +40,18 @@
     "eject": "react-scripts eject",
     "lint": "eslint ./src/"
   },
+  "babel": {
+    "presets": [
+      "@babel/preset-env",
+      "@babel/preset-react"
+    ],
+    "plugins": [
+      "@babel/plugin-proposal-class-properties",
+      {
+        "loose": true
+      }
+    ]
+  },
   "browserslist": {
     "production": [
       ">0.2%",
@@ -46,7 +61,11 @@
     "development": [
       "last 1 chrome version",
       "last 1 firefox version",
-      "last 1 safari version"
+      "last 1 safari version",
+      ">0.3%",
+      "not ie 11",
+      "not dead",
+      "not op_mini all"
     ]
   }
 }
