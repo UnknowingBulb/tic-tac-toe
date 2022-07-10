@@ -23,13 +23,13 @@ namespace XOX.BLObjects
             IsActivePlayer1 = true;
         }
 
-        public Session(int id, Guid player1Id, Guid player2Id, string field, SessionState state, bool isActivePlayer1)
+        public Session(int id, Guid player1Id, Guid player2Id, string field, int state, bool isActivePlayer1)
         {
             Id = id;
             Player1Id = player1Id;
             Player2Id = player2Id;
             Field = JsonConvert.DeserializeObject<Field>(field);
-            State = state;
+            State = (SessionState)state;
             IsActivePlayer1 = isActivePlayer1;
         }
     }

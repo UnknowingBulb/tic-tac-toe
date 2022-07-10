@@ -24,7 +24,7 @@ namespace XOX.Models
         
         public Session toSession()
         {
-            return new Session();
+            return new Session(Id, Player1Id, Player2Id, Field, State, IsActivePlayer1);
         }
     }
 }

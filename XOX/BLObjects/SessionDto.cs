@@ -5,7 +5,7 @@ namespace XOX.BLObjects
 {
     public class SessionDto
     {
-        public int Id;
+        public int? Id;
         public User Player1;
         public User Player2;
         public Field Field;
