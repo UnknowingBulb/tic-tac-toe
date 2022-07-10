@@ -4,7 +4,7 @@ namespace XOX.BLObjects
 {
     static public class SessionListHandler
     {
-        static private Dictionary<int, Session> Sessions = new Dictionary<int, Session>();
+        static private Dictionary<int?, Session> Sessions = new Dictionary<int?, Session>();
 
         static private int newId = 0;
         static public int NewId { get => newId++; private set { newId = value; } }

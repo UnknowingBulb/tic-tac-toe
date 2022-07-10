@@ -3,10 +3,12 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Linq;
+using XOX.Database;
 using XOX.Services;
 
 namespace XOX
@@ -34,6 +36,11 @@ namespace XOX
 
             // Register cookie based clients identifier provider for Server Sent Events
             services.AddServerSentEventsClientIdProvider<CookieBasedServerSentEventsClientIdProvider>();
+
+            services.AddDbContext<SessionContext>(options =>
+                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+            services.AddDatabaseDeveloperPageExceptionFilter();
+
             services.AddNotificationsService(Configuration);
 
             services.AddResponseCompression(options =>

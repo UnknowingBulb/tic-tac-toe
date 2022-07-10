@@ -2,7 +2,6 @@
 using XOX.BLObjects;
 using Newtonsoft.Json;
 using System;
-using XOX.Services;
 using Lib.AspNetCore.ServerSentEvents;
 using System.Globalization;
 
@@ -10,14 +9,9 @@ namespace XOX.Controllers
 {
     public class UserController : Controller
     {
-        private INotificationsService _notificationsService;
-        private IClientService _clientService;
         private IServerSentEventsClientIdProvider _cookies;
 
-        public UserController(INotificationsService notificationsService, IClientService clientService, IServerSentEventsClientIdProvider cookies)
-        {
-            _notificationsService = notificationsService;
-            _clientService = clientService;
+        public UserController(IServerSentEventsClientIdProvider cookies) { 
             _cookies = cookies;
         }
 
