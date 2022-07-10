@@ -1,17 +1,22 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using XOX.BLObjects;
 
 namespace XOX.Models
 {
     public class SessionModel
     {
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id;
         public Guid Player1Id;
         public Guid Player2Id;
         public string Field;
         public int State;
         public bool IsActivePlayer1;
+
+        public SessionModel() { }
 
         public SessionModel(Session session)
         {

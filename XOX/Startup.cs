@@ -38,7 +38,7 @@ namespace XOX
             services.AddServerSentEventsClientIdProvider<CookieBasedServerSentEventsClientIdProvider>();
 
             services.AddDbContext<SessionContext>(options =>
-                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+                options.UseSqlite(Configuration.GetConnectionString("DefaultConnection")));
             services.AddDatabaseDeveloperPageExceptionFilter();
 
             services.AddNotificationsService(Configuration);

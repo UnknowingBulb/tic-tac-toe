@@ -15,8 +15,8 @@ namespace XOX.Database
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<SessionModel>().ToTable("SessionModel");
-            modelBuilder.Entity<UserModel>().ToTable("UserModel");
+            modelBuilder.Entity<SessionModel>().ToTable("SessionModel").HasKey(m => new { m.Id}); ;
+            modelBuilder.Entity<UserModel>().ToTable("UserModel").HasKey(m => new { m.Id }); ;
             modelBuilder.Entity<UserSessionsModel>().ToTable("UserSessionsModel").HasKey(m => new { m.UserModelId, m.SessionModelId }); 
         }
 

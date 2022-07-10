@@ -11,6 +11,8 @@ namespace XOX.Models
         public string Name;
         public string Mark;
 
+        public UserModel() { }
+
         public UserModel(User user)
         {
             Id = user.Id;

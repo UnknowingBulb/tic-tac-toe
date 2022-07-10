@@ -6,6 +6,7 @@ using System;
 using XOX.Services;
 using System.Threading.Tasks;
 using Lib.AspNetCore.ServerSentEvents;
+using XOX.Database;
 
 namespace XOX.Controllers
 {
@@ -14,19 +15,21 @@ namespace XOX.Controllers
         private INotificationsService _notificationsService;
         private IClientService _clientService;
         private IServerSentEventsClientIdProvider _cookies;
+        private SessionContext _context;
 
-        public SessionController(INotificationsService notificationsService, IClientService clientService, IServerSentEventsClientIdProvider cookies)
+        public SessionController(INotificationsService notificationsService, IClientService clientService, IServerSentEventsClientIdProvider cookies, SessionContext context)
         {
             _notificationsService = notificationsService;
             _clientService = clientService;
             _cookies = cookies;
+            _context = context;
         }
 
         [HttpGet, Route("/getSession")]
-        public IActionResult GetSession(int sessionId)
+        public async Task<IActionResult> GetSession(int sessionId)
         {
-            Guid userId = _cookies.AcquireClientId(HttpContext);
-            Session session = SessionListHandler.GetSession(sessionId);
+            _cookies.AcquireClientId(HttpContext);
+            Session session = await (new SessionListHandlerDb(_context)).GetSession(sessionId);
             if (session == null)
                 return NotFound("Игровая сессия не найдена");
             SessionDto responseData = new SessionDto(session);
@@ -41,14 +44,14 @@ namespace XOX.Controllers
         }
 
         [HttpPost, Route("/start")]
-        public IActionResult StartSession()
+        public async Task<IActionResult> StartSession()
         {
             Guid userId = _cookies.AcquireClientId(HttpContext);
             User user = UserListHandler.GetUser(userId);
             if (user == null)
                 user = UserListHandler.AddUser(new User(userId));
             Session session = new Session(user);
-            SessionListHandler.AddSession(session);
+            session = await (new SessionListHandlerDb(_context)).AddSession(session);
             _clientService.AddUserToGroup(userId, $"session{session.Id}");
             SessionDto responseData = new SessionDto(session);
             return Ok(JsonConvert.SerializeObject(responseData));
@@ -57,7 +60,7 @@ namespace XOX.Controllers
         [HttpPost, Route("/connect")]
         public async Task<IActionResult> Connect(int sessionId)
         {
-            Session session = SessionListHandler.GetSession(sessionId);
+            Session session = await (new SessionListHandlerDb(_context)).GetSession(sessionId);
             if (session == null)
                 return NotFound("Игровая сессия не найдена");
 
@@ -86,7 +89,7 @@ namespace XOX.Controllers
                 }
                 session.Player2Id = user.Id;
             }
-            SessionListHandler.AddSession(session);
+            session = await (new SessionListHandlerDb(_context)).AddSession(session);
             _clientService.AddUserToGroup(userId, $"session{session.Id}");
             string responseDataJson = JsonConvert.SerializeObject(new SessionDto(session));
             await _notificationsService.SendNotificationAsync(responseDataJson, $"session{sessionId}");
@@ -96,7 +99,7 @@ namespace XOX.Controllers
         [HttpPost, Route("/setMark")]
         public async Task<IActionResult> SetMark(int sessionId, int x, int y)
         {
-            Session session = SessionListHandler.GetSession(sessionId);
+            Session session = await (new SessionListHandlerDb(_context)).GetSession(sessionId);
             if (session == null)
                 return NotFound("Игровая сессия не найдена");
             if (session.State == SessionState.Finished || session.State == SessionState.Undefined)
@@ -123,7 +126,7 @@ namespace XOX.Controllers
                 session.State = SessionState.Finished;
             else
                 session.State = SessionState.InProgress;
-            SessionListHandler.AddSession(session);
+            session = await (new SessionListHandlerDb(_context)).AddSession(session);
 
             string responseDataJson = JsonConvert.SerializeObject(new SessionDto(session));
             await _notificationsService.SendNotificationAsync(responseDataJson, $"session{sessionId}");
