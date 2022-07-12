@@ -14,8 +14,16 @@ export class FetchData extends Component {
         this.updatePlayground();
     }
 
-    async connect(sessionId) {
+    async connect() {
+        let sessionId = document.getElementById('sessionId').value;
         const response = await fetch('connect?sessionId=' + sessionId, {
+            method: 'POST',
+        });
+        this.proceedDataResponse(response);
+    }
+
+    async retreat() {
+        const response = await fetch('retreat?sessionId=' + this.state.data.Id, {
             method: 'POST',
         });
         this.proceedDataResponse(response);
@@ -35,10 +43,13 @@ export class FetchData extends Component {
         this.proceedDataResponse(response);
     }
 
-    renderPlayground(data) {
+    renderPlayground() {
+        let data = this.state.data;
         let content =
             <div>
                 {this.renderPlayers(data)}
+                <div>№ Игровой сессии: {this.state.data.Id}</div>
+                {this.renderSessionState()}
                 <table className='playground' aria-labelledby='tableLabel'>
                     <tbody>
                         {data.Field.Cells.map((row) =>
@@ -116,10 +127,13 @@ export class FetchData extends Component {
         let contents =
             <div>
                 <input type='number' id='sessionId'></input>
-                <button id='connect' onClick={() => this.connect(document.getElementById('sessionId').value)}>Connect</button>
-                <button id='start' onClick={() => this.start()}>Start</button>
+                <button id='connect' onClick={() => this.connect()}>Connect</button>
+                {(((this.state.data == null) || (this.state.data.Id == null)) || this.state.data.State !== 2) ?
+                    null :
+                    <button id='retreat' onClick={() => this.retreat()}>Retreat</button>}
+                <button id='start' onClick={()=>this.start()}>Start</button>
                 <div id='error' key='error' className='error'>{this.state.error}</div>
-                {((this.state.data == null) || (this.state.data.Id == null)) ? (this.renderNoSessionPlayer()) : (this.renderPlayground(this.state.data))}
+                {((this.state.data == null) || (this.state.data.Id == null)) ? (this.renderNoSessionPlayer()) : (this.renderPlayground())}
             </div>;
 
         return (contents);
@@ -133,6 +147,26 @@ export class FetchData extends Component {
     async getUser() {
         const response = await fetch('getOrCreate');
         this.setState({ currentPlayer: await response.json(), error: null });
+    }
+
+    getWinnerName() {
+        if ((this.state.data == null) || (this.state.data.Id == null)) return '';
+        if (this.state.data.IsActivePlayer1 === true)
+            return this.state.data.Player1.Name;
+        //if winner isn't the 1st player then the 2nd
+        return this.state.data.Player2.Name;
+    }
+
+    renderSessionState() {
+        if ((this.state.data == null) || (this.state.data.Id == null)) return null;
+        switch (this.state.data.State) {
+            case 3:
+                return <div>Игра закончилась. Победитель: {this.getWinnerName()} </div>
+            case 4:
+                return <div>Игра закончилась вничью</div>
+            default:
+                return null;
+        }
     }
 
     async change(event) {

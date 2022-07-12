@@ -35,7 +35,7 @@ namespace XOX.BLObjects
             }
         }
 
-        public bool IsGameCompleted()
+        public bool IsGameFinishedWithVictory()
         {
             bool completed = false;
             //TODO: check for more optimal ways. I purpously did not searched on start for good solution
@@ -87,6 +87,22 @@ namespace XOX.BLObjects
                 }
             }
             return completed;
+        }
+
+        public bool HasNoMoreTurns()
+        {
+            for (int x = 0; x < size; x++)
+            {
+                for (int y = 0; y < size; y++)
+                {
+                    if (Cells[x, y].Value == string.Empty)
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
         }
     }
 }

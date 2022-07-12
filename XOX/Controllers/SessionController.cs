@@ -102,7 +102,7 @@ namespace XOX.Controllers
             Session session = await (new SessionListHandlerDb(_context)).GetSession(sessionId);
             if (session == null)
                 return NotFound("Игровая сессия не найдена");
-            if (session.State == SessionState.Finished || session.State == SessionState.Undefined)
+            if (session.State != SessionState.InProgress && session.State != SessionState.NotStarted)
                 return BadRequest("Игровая сессия завершена или не найдена");
 
             Guid userId = _cookies.AcquireClientId(HttpContext);
@@ -121,11 +121,15 @@ namespace XOX.Controllers
 
             User user = UserListHandler.GetUser(userId);
             session.Field.Cells[x, y].Value = user.Mark;
-            session.IsActivePlayer1 = !session.IsActivePlayer1;
-            if (session.Field.IsGameCompleted())
+            if (session.Field.IsGameFinishedWithVictory())
                 session.State = SessionState.Finished;
+            else if (session.Field.HasNoMoreTurns())
+                session.State = SessionState.Draw;
             else
+            {
                 session.State = SessionState.InProgress;
+                session.IsActivePlayer1 = !session.IsActivePlayer1;
+            }
             session = await (new SessionListHandlerDb(_context)).AddSession(session);
 
             string responseDataJson = JsonConvert.SerializeObject(new SessionDto(session));
@@ -133,11 +137,31 @@ namespace XOX.Controllers
             return Ok(responseDataJson);
         }
 
-        [HttpPost, Route("/finish")]
-        public IActionResult FinishSession(int sessionId)
+        [HttpPost, Route("/retreat")]
+        public async Task<IActionResult> FinishSession(int sessionId)
         {
-            SessionListHandler.Remove(sessionId);
-            return Ok();
+            Guid userId = _cookies.AcquireClientId(HttpContext);
+            Session session = await(new SessionListHandlerDb(_context)).GetSession(sessionId);
+
+            if (userId != session.Player1Id && userId != session.Player2Id)
+                return Unauthorized("Вы не участвуете в игре, можно только смотреть");
+            session.State = SessionState.Finished;
+            //TODO: i believe it can be done in one line but don't know how exactly yet
+            //session.IsActivePlayer1 = (session.IsActivePlayer1 != (session.Player1Id != userId));
+            if (session.IsActivePlayer1)
+            {
+                if (session.Player1Id == userId)
+                    session.IsActivePlayer1 = false;
+            }
+            else
+                if (session.Player1Id != userId)
+                    session.IsActivePlayer1 = true;
+
+            session = await (new SessionListHandlerDb(_context)).AddSession(session);
+
+            string responseDataJson = JsonConvert.SerializeObject(new SessionDto(session));
+            await _notificationsService.SendNotificationAsync(responseDataJson, $"session{sessionId}");
+            return Ok(responseDataJson);
         }
     }
 }
