@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using XOX.Database;
 using XOX.Models;
@@ -22,16 +21,21 @@ namespace XOX.BLObjects
                 sessionModel = new SessionModel(session);
                 await _context.AddAsync(sessionModel);
                 await _context.SaveChangesAsync();
-                return sessionModel.toSession();
             }
             else
-                return sessionModel.toSession();
+            {
+                //TODO: do not change if same values
+                sessionModel = sessionModel.ChangeWithSession(session);
+                _context.Update(sessionModel);
+                await _context.SaveChangesAsync();
+            }
+            return sessionModel.ToSession();
         }
 
         public async Task<Session> GetSession(int sessionId)
         {
             SessionModel sessionModel = await _context.Sessions.FirstOrDefaultAsync(s => s.Id == sessionId);
-            return sessionModel?.toSession();
+            return sessionModel?.ToSession();
         }
     }
 }

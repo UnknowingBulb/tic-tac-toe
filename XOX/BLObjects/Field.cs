@@ -16,7 +16,7 @@ namespace XOX.BLObjects
         /// </summary>
         public Cell[,] Cells;
 
-        private int size;
+        public int size;
 
         /// <summary>
         /// .ctor
