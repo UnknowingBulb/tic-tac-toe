@@ -14,9 +14,11 @@ namespace XOX.Services
             _notificationsServerSentEventsService = notificationsServerSentEventsService;
         }
 
-        public ServerSentEventsAddToGroupResult AddUserToGroup(Guid userId, string groupName)
+        public ServerSentEventsAddToGroupResult? AddUserToGroup(Guid userId, string groupName)
         {
             IServerSentEventsClient user = _notificationsServerSentEventsService.GetClient(userId);
+            if (user == null)
+                return null;
             return _notificationsServerSentEventsService.AddToGroup(groupName, user);
         }
 

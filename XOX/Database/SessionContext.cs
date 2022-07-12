@@ -22,7 +22,7 @@ namespace XOX.Database
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlite("Filename=Sessionss.db");
+            optionsBuilder.UseSqlite("Filename=Sessions.db");
         }
     }
 }

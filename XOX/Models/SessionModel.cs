@@ -8,7 +8,6 @@ namespace XOX.Models
 {
     public class SessionModel
     {
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id;
         public Guid Player1Id;
         public Guid Player2Id;

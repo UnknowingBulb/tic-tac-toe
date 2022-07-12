@@ -20,6 +20,7 @@ namespace XOX.BLObjects
             if (sessionModel == null || session.Id == null)
             {
                 sessionModel = new SessionModel(session);
+                await _context.AddAsync(sessionModel);
                 await _context.SaveChangesAsync();
                 return sessionModel.toSession();
             }
@@ -30,7 +31,7 @@ namespace XOX.BLObjects
         public async Task<Session> GetSession(int sessionId)
         {
             SessionModel sessionModel = await _context.Sessions.FirstOrDefaultAsync(s => s.Id == sessionId);
-            return sessionModel.toSession();
+            return sessionModel?.toSession();
         }
     }
 }

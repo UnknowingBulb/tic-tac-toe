@@ -15,6 +15,7 @@ namespace XOX
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
+                    webBuilder.UseUrls("https://localhost:5001", "https://25.35.125.72:5001");
                     webBuilder.UseStartup<Startup>();
                 });
     }

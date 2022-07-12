@@ -6,7 +6,7 @@ namespace XOX.Services
 {
     public interface IClientService
     {
-        public ServerSentEventsAddToGroupResult AddUserToGroup(Guid userId, string groupName);
+        public ServerSentEventsAddToGroupResult? AddUserToGroup(Guid userId, string groupName);
 
         public IReadOnlyCollection<IServerSentEventsClient> GetUsers();
 
