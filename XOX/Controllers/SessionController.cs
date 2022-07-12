@@ -146,16 +146,7 @@ namespace XOX.Controllers
             if (userId != session.Player1Id && userId != session.Player2Id)
                 return Unauthorized("Вы не участвуете в игре, можно только смотреть");
             session.State = SessionState.Finished;
-            //TODO: i believe it can be done in one line but don't know how exactly yet
-            //session.IsActivePlayer1 = (session.IsActivePlayer1 != (session.Player1Id != userId));
-            if (session.IsActivePlayer1)
-            {
-                if (session.Player1Id == userId)
-                    session.IsActivePlayer1 = false;
-            }
-            else
-                if (session.Player1Id != userId)
-                    session.IsActivePlayer1 = true;
+            session.IsActivePlayer1 = session.Player1Id != userId;
 
             session = await (new SessionListHandlerDb(_context)).AddSession(session);
 
