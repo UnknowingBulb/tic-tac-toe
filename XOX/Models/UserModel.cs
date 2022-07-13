@@ -7,9 +7,9 @@ namespace XOX.Models
     public class UserModel
     {
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
-        public Guid Id;
-        public string Name;
-        public string Mark;
+        public Guid Id { get; set; }
+        public string Name { get; set; }
+        public string Mark { get; set; }
 
         public UserModel() { }
 

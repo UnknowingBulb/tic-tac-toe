@@ -8,12 +8,12 @@ namespace XOX.Models
 {
     public class SessionModel
     {
-        public int Id;
-        public Guid Player1Id;
-        public Guid Player2Id;
-        public string Field;
-        public int State;
-        public bool IsActivePlayer1;
+        public int Id { get; set; }
+        public Guid Player1Id { get; set; }
+        public Guid Player2Id { get; set; }
+        public string Field { get; set; }
+        public int State { get; set; }
+        public bool IsActivePlayer1 { get; set; }
 
         public SessionModel() { }
 
