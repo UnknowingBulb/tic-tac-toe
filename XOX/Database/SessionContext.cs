@@ -20,9 +20,9 @@ namespace XOX.Database
             modelBuilder.Entity<UserSessionsModel>().ToTable("UserSessionsModel").HasKey(m => new { m.UserModelId, m.SessionModelId }); 
         }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        /*protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseSqlite("Filename=Sessions.db");
-        }
+        }*/
     }
 }

@@ -22,9 +22,8 @@ namespace XOX.BLObjects
                 await _context.AddAsync(sessionModel);
                 await _context.SaveChangesAsync();
             }
-            else
+            else if (!sessionModel.IsEqualByData(session))
             {
-                //TODO: do not change if same values
                 sessionModel = sessionModel.ChangeWithSession(session);
                 _context.Update(sessionModel);
                 await _context.SaveChangesAsync();

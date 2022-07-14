@@ -25,7 +25,8 @@ namespace XOX.Models
             Player2Id = session.Player2Id;
             IsActivePlayer1 = session.IsActivePlayer1;
         }
-        
+
+        //TODO: think about methods placement. I guess it's bad to store them with model? idk
         public Session ToSession()
         {
             return new Session(Id, Player1Id, Player2Id, Field, State, IsActivePlayer1);
@@ -39,6 +40,15 @@ namespace XOX.Models
             Player2Id = session.Player2Id;
             IsActivePlayer1 = session.IsActivePlayer1;
             return this;
+        }
+
+        public bool IsEqualByData(Session session)
+        {
+            return (State == (int)session.State &&
+                Field == JsonConvert.SerializeObject(session.Field) &&
+                Player1Id == session.Player1Id &&
+                Player2Id == session.Player2Id &&
+                IsActivePlayer1 == session.IsActivePlayer1);
         }
     }
 }
