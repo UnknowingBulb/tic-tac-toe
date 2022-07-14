@@ -71,11 +71,17 @@ namespace XOX
             }
 
             app.UseHttpsRedirection();
+            app.UseDefaultFiles();
             app.UseStaticFiles();
             app.UseSpaStaticFiles();
 
             app.UseRouting();
-
+            /*app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllerRoute(
+                    name: "default",
+                    pattern: "{controller}/{action=Index}/{id?}");
+            });*/
             app.UseResponseCompression()
                 .UseStaticFiles()
                 .UseRouting()
@@ -84,7 +90,13 @@ namespace XOX
                     // Set up second (separated) Server-Sent Events endpoint.
                     endpoints.MapServerSentEvents<NotificationsServerSentEventsService>("/session");
 
-                    endpoints.MapControllerRoute("default", "{controller=Session}/{action=session-reciever}");
+                    endpoints.MapControllerRoute(
+                        name: "default",
+                        pattern: "{controller}/{action=Index}/{id?}");
+
+                    endpoints.MapControllerRoute(
+                        name: "sse",
+                        pattern: "{controller=Session}/{action=session-reciever}");
                 });
 
             app.UseSpa(spa =>

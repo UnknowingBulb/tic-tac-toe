@@ -10,6 +10,7 @@ using XOX.Database;
 
 namespace XOX.Controllers
 {
+    [ApiController]
     public class SessionController : Controller
     {
         private INotificationsService _notificationsService;
@@ -45,7 +46,7 @@ namespace XOX.Controllers
         [AcceptVerbs("GET")]
         public IActionResult Get()
         {
-            return LocalRedirect("/fetch-data");
+            return RedirectPermanent("/");
         }
 
         [HttpPost, Route("/start")]
