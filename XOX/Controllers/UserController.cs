@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 
 namespace XOX.Controllers
 {
+    [Route("user")]
     public class UserController : Controller
     {
         private IServerSentEventsClientIdProvider _cookies;
@@ -21,7 +22,7 @@ namespace XOX.Controllers
             _userListHandler = new UserListHandlerDb(_context);
         }
 
-        [HttpGet, Route("/get")]
+        [HttpGet, Route("get")]
         public async Task<IActionResult> GetUser()
         {
             Guid userId = _cookies.AcquireClientId(HttpContext);
@@ -31,7 +32,7 @@ namespace XOX.Controllers
             return Ok(JsonConvert.SerializeObject(user));
         }
 
-        [HttpGet, Route("/getOrCreate")]
+        [HttpGet, Route("getOrCreate")]
         public async Task<IActionResult> GetOrCreateUser()
         {
             Guid userId = _cookies.AcquireClientId(HttpContext);
@@ -41,7 +42,7 @@ namespace XOX.Controllers
             return Ok(JsonConvert.SerializeObject(user));
         }
 
-        [HttpPost, Route("/change")]
+        [HttpPost, Route("change")]
         public async Task<IActionResult> Change(string name, string mark)
         {
             if (new StringInfo(mark).LengthInTextElements > 1)

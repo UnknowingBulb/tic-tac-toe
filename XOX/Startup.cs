@@ -88,7 +88,7 @@ namespace XOX
                 .UseEndpoints(endpoints =>
                 {
                     // Set up second (separated) Server-Sent Events endpoint.
-                    endpoints.MapServerSentEvents<NotificationsServerSentEventsService>("/session");
+                    endpoints.MapServerSentEvents<NotificationsServerSentEventsService>("/session-sse");
 
                     endpoints.MapControllerRoute(
                         name: "default",

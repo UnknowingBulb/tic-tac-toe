@@ -10,7 +10,7 @@ using XOX.Database;
 
 namespace XOX.Controllers
 {
-    [ApiController]
+    [Route("session")]
     public class SessionController : Controller
     {
         private INotificationsService _notificationsService;
@@ -28,7 +28,7 @@ namespace XOX.Controllers
             _userListHandler = new UserListHandlerDb(_context);
         }
 
-        [HttpGet, Route("/getSession")]
+        [HttpGet, Route("get")]
         public async Task<IActionResult> GetSession(int sessionId)
         {
             _cookies.AcquireClientId(HttpContext);
@@ -49,7 +49,7 @@ namespace XOX.Controllers
             return RedirectPermanent("/");
         }
 
-        [HttpPost, Route("/start")]
+        [HttpPost, Route("start")]
         public async Task<IActionResult> StartSession()
         {
             Guid userId = _cookies.AcquireClientId(HttpContext);
@@ -63,7 +63,7 @@ namespace XOX.Controllers
             return Ok(JsonConvert.SerializeObject(responseData));
         }
 
-        [HttpPost, Route("/connect")]
+        [HttpPost, Route("connect")]
         public async Task<IActionResult> Connect(int sessionId)
         {
             Session session = await (new SessionListHandlerDb(_context)).GetSession(sessionId);
@@ -106,7 +106,7 @@ namespace XOX.Controllers
             return Ok(responseDataJson);
         }
 
-        [HttpPost, Route("/setMark")]
+        [HttpPost, Route("setMark")]
         public async Task<IActionResult> SetMark(int sessionId, int x, int y)
         {
             Session session = await (new SessionListHandlerDb(_context)).GetSession(sessionId);
@@ -149,7 +149,7 @@ namespace XOX.Controllers
             return Ok(responseDataJson);
         }
 
-        [HttpPost, Route("/retreat")]
+        [HttpPost, Route("retreat")]
         public async Task<IActionResult> FinishSession(int sessionId)
         {
             Guid userId = _cookies.AcquireClientId(HttpContext);

@@ -16,28 +16,28 @@ export class FetchData extends Component {
 
     async connect() {
         let sessionId = document.getElementById('sessionId').value;
-        const response = await fetch('connect?sessionId=' + sessionId, {
+        const response = await fetch('session/connect?sessionId=' + sessionId, {
             method: 'POST',
         });
         this.proceedDataResponse(response);
     }
 
     async retreat() {
-        const response = await fetch('retreat?sessionId=' + this.state.data.Id, {
+        const response = await fetch('session/retreat?sessionId=' + this.state.data.Id, {
             method: 'POST',
         });
         this.proceedDataResponse(response);
     }
 
     async start() {
-        const response = await fetch('start', {
+        const response = await fetch('session/start', {
             method: 'POST',
         });
         this.proceedDataResponse(response);
     }
 
     async setMark(x, y) {
-        const response = await fetch('setMark?sessionId=' + this.state.data.Id + '&x=' + x + '&y=' + y, {
+        const response = await fetch('session/setMark?sessionId=' + this.state.data.Id + '&x=' + x + '&y=' + y, {
             method: 'POST',
         });
         this.proceedDataResponse(response);
@@ -116,7 +116,7 @@ export class FetchData extends Component {
     }
 
     updatePlayground() {
-        var source = new EventSource('/session');
+        var source = new EventSource('/session-sse');
 
         source.onmessage = function (event) {
             this.setState({ data: JSON.parse(event.data) });
@@ -140,12 +140,12 @@ export class FetchData extends Component {
     }
 
     async loadSession() {
-        const response = await fetch('getSession?sessionId=' + this.state.data.Id);
+        const response = await fetch('session/get?sessionId=' + this.state.data.Id);
         await this.proceedDataResponse(response);
     }
 
     async getUser() {
-        const response = await fetch('getOrCreate');
+        const response = await fetch('user/getOrCreate');
         this.setState({ currentPlayer: await response.json(), error: null });
     }
 
@@ -171,7 +171,7 @@ export class FetchData extends Component {
 
     async change(event) {
         event.preventDefault(event);
-        const response = await fetch('change?name=' + event.target.name.value + '&mark=' + event.target.mark.value, {
+        const response = await fetch('user/change?name=' + event.target.name.value + '&mark=' + event.target.mark.value, {
             method: 'POST',
         });
         await this.proceedUserDataResponse(response);
