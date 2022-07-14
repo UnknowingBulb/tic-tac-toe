@@ -6,7 +6,8 @@ Here I'm learning how to work with HTML, css, reactJS, ASP.NET.
 ## TO-DO 
 		✔ do some web front-end
 		✔ update play field on other player move
-		- database storage (sql, redis or smth else + Entity Framework?)
+		✔ database storage (sql, redis or smth else + Entity Framework?)
+		- reduce db queries count (mostly for user), reorganize active user state storage
 		✔ show errors on front-end
 		✔ allow to user input on user creation (backend is mostly done, need to do frontend)
 		✔ finish game with draw

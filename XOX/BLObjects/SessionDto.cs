@@ -13,13 +13,13 @@ namespace XOX.BLObjects
         public bool IsActivePlayer1;
 
 
-        public SessionDto(Session session)
+        public SessionDto(Session session, User player1, User player2)
         {
             State = session.State;
             Field = session.Field;
             Id = session.Id;
-            Player1 = UserListHandler.GetUser(session.Player1Id);
-            Player2 = session.Player2Id == Guid.Empty ? null: UserListHandler.GetUser(session.Player2Id);
+            Player1 = player1;
+            Player2 = player2;
             IsActivePlayer1 = session.IsActivePlayer1;
         }
     }

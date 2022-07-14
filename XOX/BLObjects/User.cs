@@ -21,7 +21,6 @@ namespace XOX.BLObjects
             Mark = mark;
         }
 
-        // TODO: создать нормально, а не как сейчас
         public User(Guid id)
         {
             Id = id;

@@ -4,3 +4,6 @@ XOX/obj/Debug/
 XOX/obj/
 .vs/
 XOX/ClientApp/node_modules/
+XOX/Sessions.db
+XOX/Sessions.db-shm
+XOX/Sessions.db-wal
