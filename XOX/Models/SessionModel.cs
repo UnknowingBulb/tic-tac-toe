@@ -1,7 +1,5 @@
 ﻿using Newtonsoft.Json;
 using System;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using XOX.BLObjects;
 
 namespace XOX.Models
@@ -14,6 +12,7 @@ namespace XOX.Models
         public string Field { get; set; }
         public int State { get; set; }
         public bool IsActivePlayer1 { get; set; }
+        public DateTime StartDate { get; set; }
 
         public SessionModel() { }
 
@@ -24,6 +23,7 @@ namespace XOX.Models
             Player1Id = session.Player1Id;
             Player2Id = session.Player2Id;
             IsActivePlayer1 = session.IsActivePlayer1;
+            StartDate = DateTime.UtcNow;
         }
 
         //TODO: think about methods placement. I guess it's bad to store them with model? idk
