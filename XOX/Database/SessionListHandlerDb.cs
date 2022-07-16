@@ -15,7 +15,8 @@ namespace XOX.Database
             var contextOptions = new DbContextOptionsBuilder<SessionContext>().Options;
             using (var context = new SessionContext(contextOptions))
             {
-                SessionModel sessionModel = await context.Sessions.Include(c => c.UserSessions).SingleOrDefaultAsync(s => s.Id == session.Id);
+                SessionModel sessionModel = await context.Sessions.Include(c => c.UserSessions).
+                    SingleOrDefaultAsync(s => s.Id == session.Id);
                 if (sessionModel == null || session.Id == null)
                 {
                     sessionModel = new SessionModel(session);

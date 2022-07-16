@@ -37,7 +37,10 @@ namespace XOX.Database
             var contextOptions = new DbContextOptionsBuilder<SessionContext>().Options;
             using (var context = new SessionContext(contextOptions))
             {
-                UserModel userModel = await context.Users.FirstOrDefaultAsync(s => s.Id == userId);
+                UserModel userModel = await context.Users
+                .Include(c => c.UserSessions)
+                    .ThenInclude(i => i.Session)
+                .FirstOrDefaultAsync(s => s.Id == userId);
                 if (userModel == null || userModel.Id == Guid.Empty)
                     return Result.Fail("User not found");
                 return new User(userModel);

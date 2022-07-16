@@ -1,8 +1,10 @@
 ﻿using emoji_dotnet;
 using FluentResults;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using XOX.Database;
+using XOX.Enums;
 using XOX.Models;
 
 namespace XOX.BLObjects
@@ -13,7 +15,7 @@ namespace XOX.BLObjects
         public string Name;
         public string Mark;
 
-        public bool HasActiveSessions { get { return false; } }
+        public bool HasActiveSessions { get; private set; }
 
         public User() { }
 
@@ -31,6 +33,8 @@ namespace XOX.BLObjects
             Id = model.Id;
             Name = model.Name;
             Mark = model.Mark;
+            HasActiveSessions = model.UserSessions.Any(s => (s.Session.State == (int)SessionState.InProgress) ||
+                (s.Session.State == (int)SessionState.NotStarted));
         }
 
         public User(Guid id)

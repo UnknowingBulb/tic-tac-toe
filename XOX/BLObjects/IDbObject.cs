@@ -1,7 +1,7 @@
 ﻿using FluentResults;
 using System.Threading.Tasks;
 
-namespace XOX.Database
+namespace XOX.BLObjects
 {
     public interface IDbObject<T, F, K>
     {
