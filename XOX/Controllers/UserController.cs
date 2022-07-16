@@ -13,32 +13,32 @@ namespace XOX.Controllers
     public class UserController : Controller
     {
         private IServerSentEventsClientIdProvider _cookies;
-        private UserListHandlerDb _userListHandler;
-        private SessionContext _context;
 
-        public UserController(IServerSentEventsClientIdProvider cookies, SessionContext context) { 
+        public UserController(IServerSentEventsClientIdProvider cookies) { 
             _cookies = cookies;
-            _context = context;
-            _userListHandler = new UserListHandlerDb(_context);
         }
 
         [HttpGet, Route("get")]
         public async Task<IActionResult> GetUser()
         {
             var userId = _cookies.AcquireClientId(HttpContext);
-            var user = await _userListHandler.GetUser(userId);
-            if (user == null)
-                return NotFound("Игрок не найден");
-            return Ok(JsonConvert.SerializeObject(user));
+
+            var userResult = await new User().Get(userId);
+            if (userResult.IsFailed)
+                return NotFound(userResult.Errors[0].Message);
+
+            return Ok(JsonConvert.SerializeObject(userResult.Value));
         }
 
         [HttpGet, Route("getOrCreate")]
         public async Task<IActionResult> GetOrCreateUser()
         {
             var userId = _cookies.AcquireClientId(HttpContext);
-            var user = await _userListHandler.GetUser(userId);
-            if (user == null)
-                user = await _userListHandler.AddUser(new User(userId));
+            var userResult = await BLObjects.User.GetOrCreate(userId);
+            if (userResult.IsFailed)
+                return BadRequest(userResult.Errors[0].Message);
+
+            var user = userResult.Value;
             return Ok(JsonConvert.SerializeObject(user));
         }
 
@@ -46,17 +46,24 @@ namespace XOX.Controllers
         public async Task<IActionResult> Change(string name, string mark)
         {
             if (new StringInfo(mark).LengthInTextElements > 1)
-                return BadRequest("Изменение не выполнено. Метка должна быть 1 символом");
+                return BadRequest("Change wasn't applied. Mark should be one symbol");
             if (name.Length > 50)
-                return BadRequest("Изменение не выполнено. Имя должно быть не длиннее 50 символов");
+                return BadRequest("Change wasn't applied. Name lenght should be 50 symbols or less");
             var userId = _cookies.AcquireClientId(HttpContext);
-            var user = await _userListHandler.GetUser(userId);
+
+            var user = new User();
+            var userResult = await user.Get(userId);
+            if (userResult.IsFailed)
+                user = null;
+            else
+                user = userResult.Value;
+
             if (user == null)
                 user = new User(userId, name, mark);
             else if (user.HasActiveSessions)
             {
                 //TODO: i don't store mark for different sessions, so i don't want to think about update for now
-                return BadRequest("Нельзя сделать, пока есть активные сессии");
+                return BadRequest("Action is forbidden while you have active sessions");
             }
             else
             {
@@ -65,7 +72,7 @@ namespace XOX.Controllers
                 if (!string.IsNullOrEmpty(mark))
                     user.Mark = mark;
             }
-            await _userListHandler.AddUser(user);
+            await user.Save();
             return Ok(JsonConvert.SerializeObject(new User(userId, name, mark)));
         }
     }

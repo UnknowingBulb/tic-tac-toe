@@ -17,18 +17,12 @@ namespace XOX.Controllers
         private INotificationsService _notificationsService;
         private IClientService _clientService;
         private IServerSentEventsClientIdProvider _cookies;
-        private SessionContext _context;
-        private UserListHandlerDb _userListHandler;
-        private SessionListHandlerDb _sessionListHandler;
 
-        public SessionController(INotificationsService notificationsService, IClientService clientService, IServerSentEventsClientIdProvider cookies, SessionContext context)
+        public SessionController(INotificationsService notificationsService, IClientService clientService, IServerSentEventsClientIdProvider cookies)
         {
             _notificationsService = notificationsService;
             _clientService = clientService;
             _cookies = cookies;
-            _context = context;
-            _userListHandler = new UserListHandlerDb(_context);
-            _sessionListHandler = new SessionListHandlerDb(_context);
         }
 
         [HttpGet, Route("get")]
@@ -39,9 +33,7 @@ namespace XOX.Controllers
             if (sessionResult.IsFailed)
                 return BadRequest(sessionResult.Errors[0].Message);
             var session = sessionResult.Value;
-            var player1 = await _userListHandler.GetUser(session.Player1Id);
-            var player2 = await _userListHandler.GetUser(session.Player2Id);
-            var responseData = new SessionDto(session, player1, player2);
+            var responseData = new SessionDto(session);
             return Ok(JsonConvert.SerializeObject(responseData));
         }
 
@@ -56,13 +48,15 @@ namespace XOX.Controllers
         public async Task<IActionResult> StartSession()
         {
             var userId = _cookies.AcquireClientId(HttpContext);
-            var user = await _userListHandler.GetUser(userId);
-            if (user == null)
-                user = await _userListHandler.AddUser(new User(userId));
+            var userResult = await BLObjects.User.GetOrCreate(userId);
+            if (userResult.IsFailed)
+                return BadRequest(userResult.Errors[0].Message);
+
+            var user = userResult.Value;
             var session = new Session(user);
-            session = await _sessionListHandler.AddSession(session);
+            await session.Save();
             _clientService.AddUserToGroup(userId, $"session{session.Id}");
-            var responseData = new SessionDto(session, user, null);
+            var responseData = new SessionDto(session);
             return Ok(JsonConvert.SerializeObject(responseData));
         }
 
@@ -75,38 +69,44 @@ namespace XOX.Controllers
             var session = sessionResult.Value;
 
             var userId = _cookies.AcquireClientId(HttpContext);
-            var user = await _userListHandler.GetUser(userId);
-            if (user == null)
-                user = await _userListHandler.AddUser(new User(userId));
+            var userResult = await BLObjects.User.GetOrCreate(userId);
+            if (userResult.IsFailed)
+                return BadRequest(userResult.Errors[0].Message);
+
+            var user = userResult.Value;
             //If no empty slots
-            if (!((session.Player1Id == Guid.Empty || session.Player2Id == Guid.Empty) ||
-                (session.Player1Id == userId || session.Player2Id == userId)))
+            if (!((session.Player1 == null || session.Player2 == null) || 
+                (session.Player1.Id == Guid.Empty || session.Player2.Id == Guid.Empty) ||
+                (session.Player1.Id == userId || session.Player2.Id == user.Id)))
                 return NotFound("Cannot connect. There are no empty slots for players in the session");
 
-            var player1 = await _userListHandler.GetUser(session.Player1Id);
-            var player2 = await _userListHandler.GetUser(session.Player2Id);
+            if ((session.Player1 == null || session.Player1.Id == Guid.Empty) && session.Player2.Id != user.Id)
+            {
+                if (session.Player2.Mark == user.Mark)
+                {
+                    return BadRequest("You have the same mark as the other player. Change your mark and try again");
+                }
+                session.Player1 = user;
+            }
+            else if ((session.Player2 == null || session.Player2.Id == Guid.Empty) && session.Player1.Id != user.Id)
+            {
+                if (session.Player1.Mark == user.Mark)
+                {
+                    return BadRequest("You have the same mark as the other player. Change your mark and try again");
+                }
+                session.Player2.Id = user.Id;
+            }
 
-            if (session.Player1Id == Guid.Empty && session.Player2Id != user.Id)
-            {
-                if (player2.Mark == user.Mark)
-                {
-                    return BadRequest("You have the same mark as the other player. Change your mark and try again");
-                }
-                session.Player1Id = user.Id;
-            }
-            else if (session.Player2Id == Guid.Empty && session.Player1Id != user.Id)
-            {
-                if (player1.Mark == user.Mark)
-                {
-                    return BadRequest("You have the same mark as the other player. Change your mark and try again");
-                }
-                session.Player2Id = user.Id;
-                player2 = user;
-            }
-            session = await _sessionListHandler.AddSession(session);
+            sessionResult = await session.Save();
+
+            if (sessionResult.IsFailed)
+                return BadRequest(sessionResult.Errors[0].Message);
+
+            session = sessionResult.Value;
             _clientService.AddUserToGroup(userId, $"session{session.Id}");
-            string responseDataJson = JsonConvert.SerializeObject(new SessionDto(session, player1, player2));
+            string responseDataJson = JsonConvert.SerializeObject(new SessionDto(session));
             await _notificationsService.SendNotificationAsync(responseDataJson, $"session{sessionId}");
+
             return Ok(responseDataJson);
         }
 
@@ -121,20 +121,24 @@ namespace XOX.Controllers
                 return BadRequest("Game session is finished or not found");
 
             Guid userId = _cookies.AcquireClientId(HttpContext);
-            if (session.Player1Id == userId && session.Player2Id == Guid.Empty)
+            if (session.Player1.Id == userId && session.Player2 == null || session.Player2.Id == userId && session.Player1 == null)
                 return BadRequest("Can't start without 2nd player");
             //If no empty slots
-            if (!((session.Player1Id == Guid.Empty || session.Player2Id == Guid.Empty) ||
-                (session.Player1Id == userId || session.Player2Id == userId)))
+            if (!((session.Player1 == null || session.Player2 == null) ||
+                (session.Player1.Id == userId || session.Player2.Id == userId)))
                 return Unauthorized("You not participate in game. Watch-only");
 
-            if ((session.IsActivePlayer1 && session.Player1Id != userId) ||
-                (!session.IsActivePlayer1 && session.Player2Id != userId))
+            if ((session.IsActivePlayer1 && session.Player1.Id != userId) ||
+                (!session.IsActivePlayer1 && session.Player2.Id != userId))
                 return BadRequest("The action is forbidden. It's not your turn");
             if (session.Field.Cells[x, y].Value != string.Empty)
                 return BadRequest("The cell is alredy filled. Try another one");
 
-            var user = await _userListHandler.GetUser(userId);
+            var userResult = await BLObjects.User.GetOrCreate(userId);
+            if (userResult.IsFailed)
+                return BadRequest(userResult.Errors[0].Message);
+
+            var user = userResult.Value;
             session.Field.Cells[x, y].Value = user.Mark;
             if (session.Field.IsGameFinishedWithVictory())
                 session.State = SessionState.Finished;
@@ -145,11 +149,10 @@ namespace XOX.Controllers
                 session.State = SessionState.InProgress;
                 session.IsActivePlayer1 = !session.IsActivePlayer1;
             }
-            session = await _sessionListHandler.AddSession(session);
 
-            var player1 = await _userListHandler.GetUser(session.Player1Id);
-            var player2 = await _userListHandler.GetUser(session.Player2Id);
-            string responseDataJson = JsonConvert.SerializeObject(new SessionDto(session, player1, player2));
+            await session.Save();
+
+            string responseDataJson = JsonConvert.SerializeObject(new SessionDto(session));
             await _notificationsService.SendNotificationAsync(responseDataJson, $"session{sessionId}");
             return Ok(responseDataJson);
         }
@@ -163,27 +166,27 @@ namespace XOX.Controllers
                 return BadRequest(sessionResult.Errors[0].Message);
             var session = sessionResult.Value;
 
-            if (userId != session.Player1Id && userId != session.Player2Id)
+            if (session.Player1 == null || session.Player2 == null)
+            {
+                return Unauthorized("Game not started. You cannot retreat until both players connect");
+            }
+            if (userId != session.Player1.Id && userId != session.Player2.Id)
                 return Unauthorized("You not participate in game. Watch-only");
             session.State = SessionState.Finished;
-            session.IsActivePlayer1 = session.Player1Id != userId;
+            session.IsActivePlayer1 = session.Player1.Id != userId;
 
-            session = await _sessionListHandler.AddSession(session);
+            await session.Save();
 
-            var player1 = await _userListHandler.GetUser(session.Player1Id);
-            var player2 = await _userListHandler.GetUser(session.Player2Id);
-            string responseDataJson = JsonConvert.SerializeObject(new SessionDto(session, player1, player2));
+            string responseDataJson = JsonConvert.SerializeObject(new SessionDto(session));
             await _notificationsService.SendNotificationAsync(responseDataJson, $"session{sessionId}");
             return Ok(responseDataJson);
         }
 
-        private async Task<Result<Session>> getSession(int sessionId)
+        private static async Task<Result<Session>> getSession(int sessionId)
         {
             if (sessionId < 1)
                 return Result.Fail("Wrong session index. It must be greater than 1");
-            Session session = await _sessionListHandler.GetSession(sessionId);
-            if (session == null)
-                return Result.Fail("Game session not found");
+            var session = await new Session().Get(sessionId);
             return session;
 
         }

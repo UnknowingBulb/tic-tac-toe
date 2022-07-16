@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using FluentResults;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Threading.Tasks;
 using XOX.Database;
@@ -6,38 +7,41 @@ using XOX.Models;
 
 namespace XOX.BLObjects
 {
-    //TODO: заменить на нормальное, здесь временно сделано, чтобы было
-
-    public class UserListHandlerDb
+    public static class UserListHandlerDb
     {
-        private readonly SessionContext _context;
-        public UserListHandlerDb(SessionContext context)
+        public async static Task<User> AddUser(User user)
         {
-            _context = context;
+            var contextOptions = new DbContextOptionsBuilder<SessionContext>().Options;
+            using (var context = new SessionContext(contextOptions))
+            {
+                UserModel userModel = await context.Users.FirstOrDefaultAsync(s => s.Id == user.Id);
+                if (userModel == null || user.Id == Guid.Empty)
+                {
+                    userModel = new UserModel(user);
+                    await context.AddAsync(userModel);
+                    await context.SaveChangesAsync();
+                }
+                else if (!user.IsEqualByData(userModel))
+                {
+                    userModel = user.ChangeModel(userModel);
+                    context.Update(userModel);
+                    await context.SaveChangesAsync();
+                }
+                user.Id = userModel.Id;
+                return user;
+            }
         }
 
-        public async Task<User> AddUser(User user)
+        public async static Task<Result<User>> GetUser(Guid userId)
         {
-            UserModel userModel = await _context.Users.FirstOrDefaultAsync(s => s.Id == user.Id);
-            if (userModel == null || user.Id == Guid.Empty)
+            var contextOptions = new DbContextOptionsBuilder<SessionContext>().Options;
+            using (var context = new SessionContext(contextOptions))
             {
-                userModel = new UserModel(user);
-                await _context.AddAsync(userModel);
-                await _context.SaveChangesAsync();
+                UserModel userModel = await context.Users.FirstOrDefaultAsync(s => s.Id == userId);
+                if (userModel == null || userModel.Id == Guid.Empty)
+                    return Result.Fail("User not found");
+                return new User(userModel);
             }
-            else if (!userModel.IsEqualByData(user))
-            {
-                userModel = userModel.ChangeWithUser(user);
-                _context.Update(userModel);
-                await _context.SaveChangesAsync();
-            }
-            return userModel.ToUser();
-        }
-
-        public async Task<User> GetUser(Guid userId)
-        {
-            UserModel userModel = await _context.Users.FirstOrDefaultAsync(s => s.Id == userId);
-            return userModel?.ToUser();
         }
     }
 }
