@@ -37,7 +37,7 @@ namespace XOX.Controllers
             _cookies.AcquireClientId(HttpContext);
             var sessionResult = await getSession(sessionId);
             if (sessionResult.IsFailed)
-                return BadRequest(sessionResult.Errors.ToString());
+                return BadRequest(sessionResult.Errors[0].Message);
             var session = sessionResult.Value;
             var player1 = await _userListHandler.GetUser(session.Player1Id);
             var player2 = await _userListHandler.GetUser(session.Player2Id);
@@ -71,7 +71,7 @@ namespace XOX.Controllers
         {
             var sessionResult = await getSession(sessionId);
             if (sessionResult.IsFailed)
-                return BadRequest(sessionResult.Errors.ToString());
+                return BadRequest(sessionResult.Errors[0].Message);
             var session = sessionResult.Value;
 
             var userId = _cookies.AcquireClientId(HttpContext);
@@ -115,7 +115,7 @@ namespace XOX.Controllers
         {
             var sessionResult = await getSession(sessionId);
             if (sessionResult.IsFailed)
-                return BadRequest(sessionResult.Errors.ToString());
+                return BadRequest(sessionResult.Errors[0].Message);
             var session = sessionResult.Value;
             if (session.State != SessionState.InProgress && session.State != SessionState.NotStarted)
                 return BadRequest("Game session is finished or not found");
@@ -160,7 +160,7 @@ namespace XOX.Controllers
             Guid userId = _cookies.AcquireClientId(HttpContext);
             var sessionResult = await getSession(sessionId);
             if (sessionResult.IsFailed)
-                return BadRequest(sessionResult.Errors.ToString());
+                return BadRequest(sessionResult.Errors[0].Message);
             var session = sessionResult.Value;
 
             if (userId != session.Player1Id && userId != session.Player2Id)

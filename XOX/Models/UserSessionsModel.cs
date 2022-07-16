@@ -10,7 +10,7 @@ namespace XOX.Models
         public Guid UserModelId { get; set; }
         public int SessionModelId { get; set; }
 
-        public bool IsActive;
+        public bool IsActive { get; set; }
 
         public UserSessionsModel() { }
 
