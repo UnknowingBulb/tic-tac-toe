@@ -1,9 +1,10 @@
 
-XOX/bin/Debug/
-XOX/obj/Debug/
+XOX/bin/
+XOX/obj/
 XOX/obj/
 .vs/
 XOX/ClientApp/node_modules/
+XOX/ClientApp/build/
 XOX/Sessions.db
 XOX/Sessions.db-shm
 XOX/Sessions.db-wal
