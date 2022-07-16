@@ -1,8 +1,6 @@
 ﻿using emoji_dotnet;
 using FluentResults;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using XOX.Database;
 using XOX.Models;
@@ -40,17 +38,6 @@ namespace XOX.BLObjects
             Id = id;
             Name = RandomFriendlyNameGenerator.NameGenerator.Identifiers.Get();
             Mark = EmojiUid.Generate(1);;
-        }
-
-        //TODO: remove this method or constructor
-        public User FromModel(UserModel model)
-        {
-            if (model == null)
-                return null;
-            Id = model.Id;
-            Name = model.Name;
-            Mark = model.Mark;
-            return this;
         }
 
         public bool IsEqualByData(UserModel model)

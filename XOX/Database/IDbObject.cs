@@ -1,5 +1,4 @@
 ﻿using FluentResults;
-using System;
 using System.Threading.Tasks;
 
 namespace XOX.Database

@@ -1,5 +1,4 @@
-﻿using System;
-using XOX.Enums;
+﻿using XOX.Enums;
 
 namespace XOX.BLObjects
 {

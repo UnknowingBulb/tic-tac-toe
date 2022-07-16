@@ -1,13 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using XOX.BLObjects;
-using Newtonsoft.Json;
-using XOX.Enums;
-using System;
-using XOX.Services;
-using System.Threading.Tasks;
+﻿using FluentResults;
 using Lib.AspNetCore.ServerSentEvents;
-using XOX.Database;
-using FluentResults;
+using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using System;
+using System.Threading.Tasks;
+using XOX.BLObjects;
+using XOX.Enums;
+using XOX.Services;
 
 namespace XOX.Controllers
 {

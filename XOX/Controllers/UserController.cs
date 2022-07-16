@@ -1,11 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using XOX.BLObjects;
+﻿using Lib.AspNetCore.ServerSentEvents;
+using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using System;
-using Lib.AspNetCore.ServerSentEvents;
 using System.Globalization;
-using XOX.Database;
 using System.Threading.Tasks;
+using XOX.BLObjects;
 
 namespace XOX.Controllers
 {
