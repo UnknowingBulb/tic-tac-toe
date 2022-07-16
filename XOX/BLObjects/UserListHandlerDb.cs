@@ -25,19 +25,20 @@ namespace XOX.BLObjects
                 await _context.AddAsync(userModel);
                 await _context.SaveChangesAsync();
             }
-            else if (!userModel.IsEqualByData(user))
+            else if (!user.IsEqualByData(userModel))
             {
-                userModel = userModel.ChangeWithUser(user);
+                userModel = user.ChangeModel(userModel);
                 _context.Update(userModel);
                 await _context.SaveChangesAsync();
             }
-            return userModel.ToUser();
+            user.Id = userModel.Id;
+            return user;
         }
 
         public async Task<User> GetUser(Guid userId)
         {
             UserModel userModel = await _context.Users.FirstOrDefaultAsync(s => s.Id == userId);
-            return userModel?.ToUser();
+            return new User(userModel);
         }
     }
 }
