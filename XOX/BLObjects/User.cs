@@ -52,11 +52,6 @@ namespace XOX.BLObjects
             return this;
         }
 
-        public UserModel ToModel()
-        {
-            return new UserModel(this);
-        }
-
         public bool IsEqualByData(UserModel model)
         {
             return (Name == model.Name && Mark == model.Mark);
@@ -71,12 +66,12 @@ namespace XOX.BLObjects
 
         public async Task<Result<User>> Get(Guid id)
         {
-            throw new NotImplementedException();
+            return await UserListHandlerDb.GetUser(id);
         }
 
         public async Task<Result<User>> Save()
         {
-            throw new NotImplementedException();
+            return await UserListHandlerDb.AddUser(this); ;
         }
 
         public async static Task<Result<User>> GetOrCreate(Guid id)

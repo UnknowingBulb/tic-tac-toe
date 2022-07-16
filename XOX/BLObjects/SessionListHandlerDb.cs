@@ -8,12 +8,8 @@ using XOX.Models;
 
 namespace XOX.BLObjects
 {
-    public class SessionListHandlerDb
+    public static class SessionListHandlerDb
     {
-        public SessionListHandlerDb()
-        {
-        }
-
         public static async Task<Result<Session>> AddSession(Session session)
         {
             var contextOptions = new DbContextOptionsBuilder<SessionContext>().Options;
@@ -23,7 +19,9 @@ namespace XOX.BLObjects
                 if (sessionModel == null || session.Id == null)
                 {
                     sessionModel = new SessionModel(session);
+                    using var transaction = context.Database.BeginTransaction();
                     await context.AddAsync(sessionModel);
+                    await context.SaveChangesAsync();
                     //by current logic we ALWAYS go into below if but i'll still leave it here just in case
                     if (session.Player1 != null)
                     {
@@ -45,6 +43,7 @@ namespace XOX.BLObjects
                         });
                     }
                     await context.SaveChangesAsync();
+                    transaction.Commit();
                 }
                 else if (!session.IsEqualByData(sessionModel))
                 {
@@ -64,7 +63,7 @@ namespace XOX.BLObjects
                             userSession.IsActive = session.IsActivePlayer1;
                             context.Update(userSession);
 
-                            if (session.Player2 != null)
+                            if (session.Player2 != null && session.Player2.Id != Guid.Empty)
                                 await context.AddAsync(new UserSessionsModel(session.Player2.Id, sessionModel.Id, !session.IsActivePlayer1));
                         }
                         else if (session.Player2 != null && userSession.UserModelId == session.Player2.Id)
@@ -135,10 +134,11 @@ namespace XOX.BLObjects
                     return Result.Fail("Game session not found");
 
                 return new Session(sessionModel.Id,
-                    sessionModel.UserSessions.ElementAt(0).User,
-                    sessionModel.UserSessions.ElementAt(1).User,
-                    sessionModel.Field, sessionModel.State,
-                    sessionModel.UserSessions.ElementAt(0).IsActive);
+                    sessionModel.UserSessions.ElementAtOrDefault(0)?.User,
+                    sessionModel.UserSessions.ElementAtOrDefault(1)?.User,
+                    sessionModel.Field, 
+                    sessionModel.State,
+                    sessionModel.UserSessions.ElementAtOrDefault(0)?.IsActive);
             }
         }
     }

@@ -11,8 +11,6 @@ namespace XOX.BLObjects
 
         public Task<Result<T>> Save();
 
-        public F ToModel();
-
         public F ChangeModel(F model);
 
         public bool IsEqualByData(F model);

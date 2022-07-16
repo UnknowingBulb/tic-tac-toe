@@ -17,14 +17,12 @@ namespace XOX.Controllers
         private INotificationsService _notificationsService;
         private IClientService _clientService;
         private IServerSentEventsClientIdProvider _cookies;
-        private SessionContext _context;
 
-        public SessionController(INotificationsService notificationsService, IClientService clientService, IServerSentEventsClientIdProvider cookies, SessionContext context)
+        public SessionController(INotificationsService notificationsService, IClientService clientService, IServerSentEventsClientIdProvider cookies)
         {
             _notificationsService = notificationsService;
             _clientService = clientService;
             _cookies = cookies;
-            _context = context;
         }
 
         [HttpGet, Route("get")]
@@ -77,11 +75,12 @@ namespace XOX.Controllers
 
             var user = userResult.Value;
             //If no empty slots
-            if (!((session.Player1 == null || session.Player2 == null) ||
+            if (!((session.Player1 == null || session.Player2 == null) || 
+                (session.Player1.Id == Guid.Empty || session.Player2.Id == Guid.Empty) ||
                 (session.Player1.Id == userId || session.Player2.Id == user.Id)))
                 return NotFound("Cannot connect. There are no empty slots for players in the session");
 
-            if (session.Player1 == null && session.Player2.Id != user.Id)
+            if ((session.Player1 == null || session.Player1.Id == Guid.Empty) && session.Player2.Id != user.Id)
             {
                 if (session.Player2.Mark == user.Mark)
                 {
@@ -89,7 +88,7 @@ namespace XOX.Controllers
                 }
                 session.Player1 = user;
             }
-            else if (session.Player2 == null && session.Player1.Id != user.Id)
+            else if ((session.Player2 == null || session.Player2.Id == Guid.Empty) && session.Player1.Id != user.Id)
             {
                 if (session.Player1.Mark == user.Mark)
                 {
@@ -183,7 +182,7 @@ namespace XOX.Controllers
             return Ok(responseDataJson);
         }
 
-        private async Task<Result<Session>> getSession(int sessionId)
+        private static async Task<Result<Session>> getSession(int sessionId)
         {
             if (sessionId < 1)
                 return Result.Fail("Wrong session index. It must be greater than 1");
