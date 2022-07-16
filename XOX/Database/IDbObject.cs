@@ -2,10 +2,9 @@
 using System;
 using System.Threading.Tasks;
 
-namespace XOX.BLObjects
+namespace XOX.Database
 {
-    //TODO: move somewhere out of BL
-    public interface IDbObject<T,F, K>
+    public interface IDbObject<T, F, K>
     {
         public Task<Result<T>> Get(K id);
 

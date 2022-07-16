@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using XOX.Database;
 using XOX.Models;
 
 namespace XOX.BLObjects

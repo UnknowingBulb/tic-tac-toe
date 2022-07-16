@@ -3,10 +3,10 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using XOX.Database;
+using XOX.BLObjects;
 using XOX.Models;
 
-namespace XOX.BLObjects
+namespace XOX.Database
 {
     public static class SessionListHandlerDb
     {
@@ -98,7 +98,8 @@ namespace XOX.BLObjects
                             userSession1.IsActive = !session.IsActivePlayer1;
                             userSession2.IsActive = session.IsActivePlayer1;
                         }
-                        else {
+                        else
+                        {
                             return Result.Fail("Problems with users in this session");
                         }
 
@@ -136,7 +137,7 @@ namespace XOX.BLObjects
                 return new Session(sessionModel.Id,
                     sessionModel.UserSessions.ElementAtOrDefault(0)?.User,
                     sessionModel.UserSessions.ElementAtOrDefault(1)?.User,
-                    sessionModel.Field, 
+                    sessionModel.Field,
                     sessionModel.State,
                     sessionModel.UserSessions.ElementAtOrDefault(0)?.IsActive);
             }

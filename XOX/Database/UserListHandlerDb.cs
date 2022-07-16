@@ -2,10 +2,10 @@
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Threading.Tasks;
-using XOX.Database;
+using XOX.BLObjects;
 using XOX.Models;
 
-namespace XOX.BLObjects
+namespace XOX.Database
 {
     public static class UserListHandlerDb
     {

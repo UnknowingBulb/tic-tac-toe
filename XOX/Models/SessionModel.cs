@@ -9,15 +9,10 @@ namespace XOX.Models
     {
         public int? Id { get; set; }
 
-        //public Guid Player1Id { get; set; }
-
-        //public Guid Player2Id { get; set; }
-
         public string Field { get; set; }
 
         public int State { get; set; }
 
-        //public bool IsActivePlayer1 { get; set; }
         public DateTime StartDate { get; set; }
 
         public ICollection<UserSessionsModel> UserSessions { get; set; }

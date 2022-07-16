@@ -1,5 +1,4 @@
 ﻿using System;
-using XOX.BLObjects;
 
 namespace XOX.Models
 {
