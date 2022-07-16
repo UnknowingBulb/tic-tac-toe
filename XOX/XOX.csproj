@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <PackageReference Include="emoji-uid-dotnet" Version="1.0.0" />
+    <PackageReference Include="FluentResults" Version="3.8.0" />
     <PackageReference Include="Lib.AspNetCore.ServerSentEvents" Version="8.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="6.0.7" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="5.0.17" />
