@@ -16,6 +16,8 @@ namespace XOX.BLObjects
 
         public bool HasActiveSessions { get { return false; } }
 
+        public User() { }
+
         public User(Guid id, string name, string mark)
         {
             Id = id;
@@ -75,6 +77,17 @@ namespace XOX.BLObjects
         public async Task<Result<User>> Save()
         {
             throw new NotImplementedException();
+        }
+
+        public async static Task<Result<User>> GetOrCreate(Guid id)
+        {
+            var userResult = await new User().Get(id);
+
+            if (userResult.IsSuccess)
+                return userResult.Value;
+
+            var user = new User(id);
+            return await user.Save();
         }
     }
 }
