@@ -19,6 +19,7 @@ namespace XOX.Controllers
         private IServerSentEventsClientIdProvider _cookies;
         private SessionContext _context;
         private UserListHandlerDb _userListHandler;
+        private SessionListHandlerDb _sessionListHandler;
 
         public SessionController(INotificationsService notificationsService, IClientService clientService, IServerSentEventsClientIdProvider cookies, SessionContext context)
         {
@@ -27,6 +28,7 @@ namespace XOX.Controllers
             _cookies = cookies;
             _context = context;
             _userListHandler = new UserListHandlerDb(_context);
+            _sessionListHandler = new SessionListHandlerDb(_context);
         }
 
         [HttpGet, Route("get")]
@@ -58,7 +60,7 @@ namespace XOX.Controllers
             if (user == null)
                 user = await _userListHandler.AddUser(new User(userId));
             var session = new Session(user);
-            session = await (new SessionListHandlerDb(_context)).AddSession(session);
+            session = await _sessionListHandler.AddSession(session);
             _clientService.AddUserToGroup(userId, $"session{session.Id}");
             var responseData = new SessionDto(session, user, null);
             return Ok(JsonConvert.SerializeObject(responseData));
@@ -79,7 +81,7 @@ namespace XOX.Controllers
             //If no empty slots
             if (!((session.Player1Id == Guid.Empty || session.Player2Id == Guid.Empty) ||
                 (session.Player1Id == userId || session.Player2Id == userId)))
-                return NotFound("Нет свободных слотов");
+                return NotFound("Cannot connect. There are no empty slots for players in the session");
 
             var player1 = await _userListHandler.GetUser(session.Player1Id);
             var player2 = await _userListHandler.GetUser(session.Player2Id);
@@ -88,7 +90,7 @@ namespace XOX.Controllers
             {
                 if (player2.Mark == user.Mark)
                 {
-                    return BadRequest("Совпадает метка с уже участвующим игроком. Измените свою метку и попробуйте снова");
+                    return BadRequest("You have the same mark as the other player. Change your mark and try again");
                 }
                 session.Player1Id = user.Id;
             }
@@ -96,12 +98,12 @@ namespace XOX.Controllers
             {
                 if (player1.Mark == user.Mark)
                 {
-                    return BadRequest("Совпадает метка с уже участвующим игроком. Измените свою метку и попробуйте снова");
+                    return BadRequest("You have the same mark as the other player. Change your mark and try again");
                 }
                 session.Player2Id = user.Id;
                 player2 = user;
             }
-            session = await (new SessionListHandlerDb(_context)).AddSession(session);
+            session = await _sessionListHandler.AddSession(session);
             _clientService.AddUserToGroup(userId, $"session{session.Id}");
             string responseDataJson = JsonConvert.SerializeObject(new SessionDto(session, player1, player2));
             await _notificationsService.SendNotificationAsync(responseDataJson, $"session{sessionId}");
@@ -116,21 +118,21 @@ namespace XOX.Controllers
                 return BadRequest(sessionResult.Errors.ToString());
             var session = sessionResult.Value;
             if (session.State != SessionState.InProgress && session.State != SessionState.NotStarted)
-                return BadRequest("Игровая сессия завершена или не найдена");
+                return BadRequest("Game session is finished or not found");
 
             Guid userId = _cookies.AcquireClientId(HttpContext);
             if (session.Player1Id == userId && session.Player2Id == Guid.Empty)
-                return BadRequest("2й игрок не подключился, невозможно начать");
+                return BadRequest("Can't start without 2nd player");
             //If no empty slots
             if (!((session.Player1Id == Guid.Empty || session.Player2Id == Guid.Empty) ||
                 (session.Player1Id == userId || session.Player2Id == userId)))
-                return Unauthorized("Вы не участвуете в игре, можно только смотреть");
+                return Unauthorized("You not participate in game. Watch-only");
 
             if ((session.IsActivePlayer1 && session.Player1Id != userId) ||
                 (!session.IsActivePlayer1 && session.Player2Id != userId))
-                return BadRequest("Действие запрещено, не ваш ход");
+                return BadRequest("The action is forbidden. It's not your turn");
             if (session.Field.Cells[x, y].Value != string.Empty)
-                return BadRequest("Ячейка занята, попробуйте другую");
+                return BadRequest("The cell is alredy filled. Try another one");
 
             var user = await _userListHandler.GetUser(userId);
             session.Field.Cells[x, y].Value = user.Mark;
@@ -143,7 +145,7 @@ namespace XOX.Controllers
                 session.State = SessionState.InProgress;
                 session.IsActivePlayer1 = !session.IsActivePlayer1;
             }
-            session = await (new SessionListHandlerDb(_context)).AddSession(session);
+            session = await _sessionListHandler.AddSession(session);
 
             var player1 = await _userListHandler.GetUser(session.Player1Id);
             var player2 = await _userListHandler.GetUser(session.Player2Id);
@@ -162,11 +164,11 @@ namespace XOX.Controllers
             var session = sessionResult.Value;
 
             if (userId != session.Player1Id && userId != session.Player2Id)
-                return Unauthorized("Вы не участвуете в игре, можно только смотреть");
+                return Unauthorized("You not participate in game. Watch-only");
             session.State = SessionState.Finished;
             session.IsActivePlayer1 = session.Player1Id != userId;
 
-            session = await (new SessionListHandlerDb(_context)).AddSession(session);
+            session = await _sessionListHandler.AddSession(session);
 
             var player1 = await _userListHandler.GetUser(session.Player1Id);
             var player2 = await _userListHandler.GetUser(session.Player2Id);
@@ -179,7 +181,7 @@ namespace XOX.Controllers
         {
             if (sessionId < 1)
                 return Result.Fail("Wrong session index. It must be greater than 1");
-            Session session = await(new SessionListHandlerDb(_context)).GetSession(sessionId);
+            Session session = await _sessionListHandler.GetSession(sessionId);
             if (session == null)
                 return Result.Fail("Game session not found");
             return session;
