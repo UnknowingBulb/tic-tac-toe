@@ -93,7 +93,7 @@ namespace XOX.Controllers
                 {
                     return BadRequest("You have the same mark as the other player. Change your mark and try again");
                 }
-                session.Player2.Id = user.Id;
+                session.Player2 = user;
             }
 
             sessionResult = await session.Save();

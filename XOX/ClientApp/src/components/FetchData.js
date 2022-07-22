@@ -46,9 +46,9 @@ export class FetchData extends Component {
     renderPlayground() {
         let data = this.state.data;
         let content =
-            <div>
+            <div className='data-content'>
                 {this.renderPlayers(data)}
-                <div>Session №: {this.state.data.Id}</div>
+                <div className='info-gray'>Session №: {this.state.data.Id}</div>
                 {this.renderSessionState()}
                 <table className='playground' aria-labelledby='tableLabel'>
                     <tbody>
@@ -127,7 +127,7 @@ export class FetchData extends Component {
 
     render() {
         let contents =
-            <div>
+            <div className='container'>
                 <div id='sessionControl'>
                     <input type='number' id='sessionId' className='control' placeholder='Enter session no. to connect to'></input>
                     <button id='connect' className='control btn' onClick={() => this.connect()}>Connect</button>
@@ -173,9 +173,9 @@ export class FetchData extends Component {
         if ((this.state.data == null) || (this.state.data.Id == null)) return null;
         switch (this.state.data.State) {
             case 3:
-                return <div>Игра закончилась. Победитель: {this.getWinnerName()} </div>
+                return <div className='info-green'>Игра закончилась. Победитель: {this.getWinnerName()} </div>
             case 4:
-                return <div>Игра закончилась вничью</div>
+                return <div className='info-green'>Игра закончилась вничью</div>
             default:
                 return null;
         }

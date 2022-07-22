@@ -35,26 +35,31 @@ export const Form = ({ user, onSubmit }) => {
     }
 
     return (
-        <form onSubmit={onSubmit}>
-            <div className="form-group">
-                <label htmlFor="name">Name</label>
-                <input className="form-control" id="name" defaultValue={user.Name} maxLength="50" />
-            </div>
+        <div>
+            <form id='form' onSubmit={onSubmit}>
+                <div id='form-data'>
+                    <div className="form-group">
+                        <label htmlFor="name">Name</label>
+                        <label htmlFor="mark">Mark</label>
+                    </div>
 
-            <div className="form-group">
-                <label htmlFor="mark">Mark</label>
-                <input className="form-control" id="mark" value={mark} onClick={() => setOpen(true)} onChange={onMarkChange} maxLength="1" />
-            </div>
-            <div ref={wrapperRef}>
+                    <div className="form-group">
+                        <input className="form-control" id="name" defaultValue={user.Name} maxLength="50" />
+                        <input className="form-control" id="mark" value={mark} onClick={() => setOpen(true)} onChange={onMarkChange} maxLength="1" />
+                    </div>
+
+                </div>
+                <div className="form-group">
+                    <button className="form-control btn btn-primary" type="submit">
+                        Submit
+                    </button>
+                </div>
+            </form>
+            <div id='emoji-picker' ref={wrapperRef}>
                 {open &&
                     <EmojiPicker id="picker" onEmojiSelect={onEmojiSelect} />}
             </div>
-            <div className="form-group">
-                <button className="form-control btn btn-primary" type="submit">
-                    Submit
-                </button>
-            </div>
-        </form>
+        </div>
     );
 };
 

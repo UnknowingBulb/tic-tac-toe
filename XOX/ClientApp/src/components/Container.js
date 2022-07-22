@@ -47,7 +47,7 @@ export class Container extends Component {
 
     render() {
         return (
-            <div>
+            <div className='container'>
                 <TriggerButton
                     showModal={this.showModal}
                     buttonRef={(n) => (this.TriggerButton = n)}
