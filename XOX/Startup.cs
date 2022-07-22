@@ -37,10 +37,6 @@ namespace XOX
             // Register cookie based clients identifier provider for Server Sent Events
             services.AddServerSentEventsClientIdProvider<CookieBasedServerSentEventsClientIdProvider>();
 
-            services.AddDbContext<SessionContext>(options =>
-                options.UseSqlite(Configuration.GetConnectionString("DefaultConnection")));
-            services.AddDatabaseDeveloperPageExceptionFilter();
-
             services.AddNotificationsService(Configuration);
 
             services.AddResponseCompression(options =>

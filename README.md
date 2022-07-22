@@ -17,6 +17,7 @@ Here I'm learning how to work with HTML, css, reactJS, ASP.NET.
 		- do cool front-end styles (css)
 		✔ do controllers async (where it's possible). Maybe won't be done
 		- disconnect from current sse-group on session change
+		- ru and en locale
 		- organize project files - partially done
 		- fix formatting
 		- remove start project files (mostly js) - partially done
