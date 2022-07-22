@@ -2,7 +2,7 @@
 
 const TriggerButton = ({ buttonRef, showModal }) => {
     return (
-        <button className="btn" ref={buttonRef} onClick={showModal}>
+        <button className="btn tech-btn" ref={buttonRef} onClick={showModal}>
             ⚙
         </button>
     );

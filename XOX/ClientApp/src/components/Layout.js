@@ -7,7 +7,7 @@ export class Layout extends Component {
 
     render() {
         return (
-            <div>
+            <div id='layout'>
                 <Container>
                     {this.props.children}
                 </Container>

@@ -48,7 +48,7 @@ export class FetchData extends Component {
         let content =
             <div>
                 {this.renderPlayers(data)}
-                <div>№ Игровой сессии: {this.state.data.Id}</div>
+                <div>Session №: {this.state.data.Id}</div>
                 {this.renderSessionState()}
                 <table className='playground' aria-labelledby='tableLabel'>
                     <tbody>
@@ -65,7 +65,7 @@ export class FetchData extends Component {
 
     renderNoSessionPlayer() {
         let content =
-            <div>
+            <div id='players'>
                 {this.renderPlayer(this.state.currentPlayer, false)}
             </div>
         return content;
@@ -83,16 +83,16 @@ export class FetchData extends Component {
             playerAnother = data.Player1;
         }
         let content =
-            <section className='row' aria-labelledby='playersLabel'>
+            <section aria-labelledby='playersLabel'>
                 {
                     (playerCurrent == null) ? (
-                        <div>
+                        <div id='players'>
                             <div id='Player1' className='column'>{this.renderPlayer(data.Player1)}</div>
                             <div id='Player2' className='column'>{this.renderPlayer(data.Player2)}</div>
                         </div>
                     )
                         : (
-                            <div>
+                            <div id='players'>
                                 <div id='PlayerCurrent' className='column'>{this.renderPlayer(playerCurrent)}</div>
                                 <div id='Player2' className='column'>{this.renderPlayer(playerAnother)}</div>
                             </div>
@@ -106,11 +106,13 @@ export class FetchData extends Component {
         if (playerData == null)
             return <div></div>;
         let content =
-            <div>
-                <div id='Name'>{playerData.Name}</div>
-                <div><div id='Mark'>{playerData.Mark}</div>{(!isStarted) ?
-                    <Container user={this.state.currentPlayer} onSubmit={(event) => this.change(event)} /> : <div></div>}
+            <div id='player'>
+                <div>
+                    <div id='Name'>{playerData.Name}</div>
+                    <div id='Mark'>{playerData.Mark}</div>
                 </div>
+                {(!isStarted) ?
+                    <Container user={this.state.currentPlayer} onSubmit={(event) => this.change(event)} /> : null}
             </div>
         return content;
     }
@@ -126,13 +128,23 @@ export class FetchData extends Component {
     render() {
         let contents =
             <div>
-                <input type='number' id='sessionId'></input>
-                <button id='connect' onClick={() => this.connect()}>Connect</button>
-                {(((this.state.data == null) || (this.state.data.Id == null)) || this.state.data.State !== 2) ?
-                    null :
-                    <button id='retreat' onClick={() => this.retreat()}>Retreat</button>}
-                <button id='start' onClick={()=>this.start()}>Start</button>
-                <div id='error' key='error' className='error'>{this.state.error}</div>
+                <div id='sessionControl'>
+                    <input type='number' id='sessionId' className='control' placeholder='Enter session no. to connect to'></input>
+                    <button id='connect' className='control btn' onClick={() => this.connect()}>Connect</button>
+                    <button id='start' className='control btn' onClick={() => this.start()}>Start new</button>
+                    {(((this.state.data == null) || (this.state.data.Id == null)) || this.state.data.State !== 2) ?
+                        null :
+                        <button id='retreat' className='control btn secondary-btn' onClick={() => this.retreat()}>Retreat</button>}
+                </div>
+                {(this.state.error) ?
+                    <div id='error' key='error' className='error'>
+                        <div>
+                            {this.state.error}
+                        </div>
+                        <button className='nocolor-btn' onClick={() => this.closeError()} >
+                            X
+                        </button>
+                    </div> : null}
                 {((this.state.data == null) || (this.state.data.Id == null)) ? (this.renderNoSessionPlayer()) : (this.renderPlayground())}
             </div>;
 
@@ -199,5 +211,9 @@ export class FetchData extends Component {
         else {
             this.setState({ currentPlayer: await response.json(), error: null });
         }
+    }
+
+    closeError(){
+        this.setState({error: null });
     }
 }
