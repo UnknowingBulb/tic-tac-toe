@@ -173,9 +173,9 @@ export class FetchData extends Component {
         if ((this.state.data == null) || (this.state.data.Id == null)) return null;
         switch (this.state.data.State) {
             case 3:
-                return <div className='info-green'>Игра закончилась. Победитель: {this.getWinnerName()} </div>
+                return <div className='info-green'>Game is over. Winner: {this.getWinnerName()} </div>
             case 4:
-                return <div className='info-green'>Игра закончилась вничью</div>
+                return <div className='info-green'>Game ended in a draw</div>
             default:
                 return null;
         }
