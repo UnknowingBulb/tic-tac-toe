@@ -120,7 +120,8 @@ namespace XOX.Controllers
                 return BadRequest("Game session is finished or not found");
 
             Guid userId = _cookies.AcquireClientId(HttpContext);
-            if (session.Player1.Id == userId && session.Player2 == null || session.Player2.Id == userId && session.Player1 == null)
+            if (session.Player1.Id == userId && (session.Player2 == null || session.Player2.Id == Guid.Empty) || 
+                session.Player2.Id == userId && (session.Player1 == null || session.Player1.Id == Guid.Empty))
                 return BadRequest("Can't start without 2nd player");
             //If no empty slots
             if (!((session.Player1 == null || session.Player2 == null) ||

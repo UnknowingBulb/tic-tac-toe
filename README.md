@@ -16,6 +16,7 @@ Here I'm learning how to work with HTML, css, reactJS, ASP.NET.
 		- add display of active user sessions (and possibility to connect to them)
 		✔ do cool front-end styles (css)
 		- add adaptivity
+		- do pages for not supported browsers?
 		✔ do controllers async (where it's possible). Maybe won't be done
 		- disconnect from current sse-group on session change
 		- ru and en locale
