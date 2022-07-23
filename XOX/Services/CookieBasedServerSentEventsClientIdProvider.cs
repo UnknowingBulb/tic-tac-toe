@@ -19,8 +19,8 @@ namespace XOX.Services
 
                 context.Response.Cookies.Append(COOKIE_NAME, clientId.ToString());
             }
-
-            return clientId;
+            
+            return UserClientPool.GetLastClientId(clientId);
         }
 
         public void ReleaseClientId(Guid clientId, HttpContext context)

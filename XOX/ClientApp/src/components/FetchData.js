@@ -6,11 +6,12 @@ export class FetchData extends Component {
 
     constructor(props) {
         super(props);
-        this.state = { data: Object, currentPlayer: Object, error: '', blocked: false };
+        this.state = { data: Object, currentPlayer: Object, clientId: '', error: '', blocked: false };
     }
 
     async componentDidMount() {
         await this.getUser();
+        await this.generateAndSaveClientId();
         this.updatePlayground();
     }
 
@@ -125,7 +126,7 @@ export class FetchData extends Component {
             console.log(source.readyState);
             if (source.readyState === source.CLOSED) {
                 this.setState({
-                    error: 'Error with data load. Probably it\'s caused by second tab/window with game. Currently multiple window mode is not supported', blocked: true
+                    error: 'Something went wrong. Try reload page and reconnect', blocked: true
                 });
                 return;
             }
@@ -240,5 +241,29 @@ export class FetchData extends Component {
 
     closeError(){
         this.setState({error: null });
+    }
+
+    async generateAndSaveClientId() {
+        this.setState({ clientId: this.uuidv4(), error: null });
+        await this.addClient()
+    }
+
+    async addClient() {
+        const response = await fetch('user/addClient?clientId=' + this.state.clientId, {
+            method: 'POST',
+        });
+        if (response.status >= 500) {
+            this.setState({ data: this.state.data, error: "Internal server error: " + response.status });
+        }
+        else if (response.status >= 400) {
+            this.setState({ data: this.state.data, error: await response.text() });
+        }
+    }
+
+    uuidv4() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+            var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
     }
 }

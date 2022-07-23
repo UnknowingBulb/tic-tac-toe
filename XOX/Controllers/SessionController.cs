@@ -46,7 +46,8 @@ namespace XOX.Controllers
         [HttpPost, Route("start")]
         public async Task<IActionResult> StartSession()
         {
-            var userId = _cookies.AcquireClientId(HttpContext);
+            Guid clientId = _cookies.AcquireClientId(HttpContext);
+            Guid userId = AcquireUserId();
             var userResult = await BLObjects.User.GetOrCreate(userId);
             if (userResult.IsFailed)
                 return BadRequest(userResult.Errors[0].Message);
@@ -54,7 +55,7 @@ namespace XOX.Controllers
             var user = userResult.Value;
             var session = new Session(user);
             await session.Save();
-            _clientService.AddUserToGroup(userId, $"session{session.Id}");
+            _clientService.AddUserToGroup(clientId, $"session{session.Id}");
             var responseData = new SessionDto(session);
             return Ok(JsonConvert.SerializeObject(responseData));
         }
@@ -67,7 +68,8 @@ namespace XOX.Controllers
                 return BadRequest(sessionResult.Errors[0].Message);
             var session = sessionResult.Value;
 
-            var userId = _cookies.AcquireClientId(HttpContext);
+            Guid clientId = _cookies.AcquireClientId(HttpContext);
+            Guid userId = AcquireUserId();
             var userResult = await BLObjects.User.GetOrCreate(userId);
             if (userResult.IsFailed)
                 return BadRequest(userResult.Errors[0].Message);
@@ -102,9 +104,9 @@ namespace XOX.Controllers
                 return BadRequest(sessionResult.Errors[0].Message);
 
             session = sessionResult.Value;
-            _clientService.AddUserToGroup(userId, $"session{session.Id}");
+            _clientService.AddUserToGroup(clientId, $"session{session.Id}");
             string responseDataJson = JsonConvert.SerializeObject(new SessionDto(session));
-            await _notificationsService.SendNotificationAsync(responseDataJson, $"session{sessionId}");
+            await SendResponseForSession(session, userId, responseDataJson);
 
             return Ok(responseDataJson);
         }
@@ -119,7 +121,8 @@ namespace XOX.Controllers
             if (session.State != SessionState.InProgress && session.State != SessionState.NotStarted)
                 return BadRequest("Game session is finished or not found");
 
-            Guid userId = _cookies.AcquireClientId(HttpContext);
+            Guid clientId = _cookies.AcquireClientId(HttpContext);
+            Guid userId = AcquireUserId();
             if (session.Player1.Id == userId && (session.Player2 == null || session.Player2.Id == Guid.Empty) || 
                 session.Player2.Id == userId && (session.Player1 == null || session.Player1.Id == Guid.Empty))
                 return BadRequest("Can't start without 2nd player");
@@ -153,14 +156,15 @@ namespace XOX.Controllers
             await session.Save();
 
             string responseDataJson = JsonConvert.SerializeObject(new SessionDto(session));
-            await _notificationsService.SendNotificationAsync(responseDataJson, $"session{sessionId}");
+            await SendResponseForSession(session, userId, responseDataJson);
             return Ok(responseDataJson);
         }
 
         [HttpPost, Route("retreat")]
         public async Task<IActionResult> FinishSession(int sessionId)
         {
-            Guid userId = _cookies.AcquireClientId(HttpContext);
+            Guid clientId = _cookies.AcquireClientId(HttpContext); 
+            Guid userId = AcquireUserId();
             var sessionResult = await getSession(sessionId);
             if (sessionResult.IsFailed)
                 return BadRequest(sessionResult.Errors[0].Message);
@@ -178,7 +182,7 @@ namespace XOX.Controllers
             await session.Save();
 
             string responseDataJson = JsonConvert.SerializeObject(new SessionDto(session));
-            await _notificationsService.SendNotificationAsync(responseDataJson, $"session{sessionId}");
+            await SendResponseForSession(session, userId, responseDataJson);
             return Ok(responseDataJson);
         }
 
@@ -189,6 +193,33 @@ namespace XOX.Controllers
             var session = await new Session().Get(sessionId);
             return session;
 
+        }
+
+        private async Task SendResponseForSession(Session session, Guid user, string responseData)
+        {
+            await _notificationsService.SendNotificationAsync(responseData, $"session{session.Id}");
+            if (session.Player1 != null && session.Player1.Id != Guid.Empty)
+                await _notificationsService.SendNotificationAsync(responseData, $"user{session.Player1.Id}");
+            if (session.Player2 != null && session.Player2.Id != Guid.Empty)
+                await _notificationsService.SendNotificationAsync(responseData, $"user{session.Player2.Id}");
+            if (!session.HasUser(user))
+                await _notificationsService.SendNotificationAsync(responseData, $"user{user}");
+        }
+
+        private Guid AcquireUserId()
+        {
+            Guid clientId;
+            string COOKIE_NAME = ".ServerSentEvents.Guid";
+
+            string cookieValue = HttpContext.Request.Cookies[COOKIE_NAME];
+            if (string.IsNullOrWhiteSpace(cookieValue) || !Guid.TryParse(cookieValue, out clientId))
+            {
+                clientId = Guid.NewGuid();
+
+                HttpContext.Response.Cookies.Append(COOKIE_NAME, clientId.ToString());
+            }
+
+            return clientId;
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using FluentResults;
 using Newtonsoft.Json;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using XOX.Database;
@@ -73,6 +74,28 @@ namespace XOX.BLObjects
         public async Task<Result<Session>> Save()
         {
             return await SessionListHandlerDb.AddSession(this);
+        }
+
+        public bool HasUser(User user)
+        {
+            if (user == null)
+                return false;
+
+            return HasUser(user.Id);
+        }
+
+        public bool HasUser(Guid user)
+        {
+            if ( user == Guid.Empty)
+                return false;
+
+            if (Player1 != null && Player1.Id == user)
+                return true;
+
+            if (Player2 != null && Player2.Id == user)
+                return true;
+
+            return false;
         }
     }
 }

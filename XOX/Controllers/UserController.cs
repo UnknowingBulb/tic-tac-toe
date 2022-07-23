@@ -1,25 +1,29 @@
 ﻿using Lib.AspNetCore.ServerSentEvents;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using System;
 using System.Globalization;
 using System.Threading.Tasks;
 using XOX.BLObjects;
+using XOX.Services;
 
 namespace XOX.Controllers
 {
     [Route("user")]
     public class UserController : Controller
     {
+        private IClientService _clientService;
         private IServerSentEventsClientIdProvider _cookies;
 
-        public UserController(IServerSentEventsClientIdProvider cookies) { 
+        public UserController(IClientService clientService, IServerSentEventsClientIdProvider cookies) {
+            _clientService = clientService;
             _cookies = cookies;
         }
 
         [HttpGet, Route("get")]
         public async Task<IActionResult> GetUser()
         {
-            var userId = _cookies.AcquireClientId(HttpContext);
+            var userId = AcquireUserId();
 
             var userResult = await new User().Get(userId);
             if (userResult.IsFailed)
@@ -31,13 +35,22 @@ namespace XOX.Controllers
         [HttpGet, Route("getOrCreate")]
         public async Task<IActionResult> GetOrCreateUser()
         {
-            var userId = _cookies.AcquireClientId(HttpContext);
+            var userId = AcquireUserId();
             var userResult = await BLObjects.User.GetOrCreate(userId);
             if (userResult.IsFailed)
                 return BadRequest(userResult.Errors[0].Message);
 
             var user = userResult.Value;
             return Ok(JsonConvert.SerializeObject(user));
+        }
+
+        [HttpPost, Route("addClient")]
+        public IActionResult AddClient(Guid clientId)
+        {
+            var userId = AcquireUserId();
+            UserClientPool.AddClient(clientId, userId);
+            _clientService.AddUserToGroup(clientId, $"user{userId}");
+            return Ok();
         }
 
         [HttpPost, Route("change")]
@@ -47,7 +60,7 @@ namespace XOX.Controllers
                 return BadRequest("Change wasn't applied. Mark should be one symbol");
             if (name.Length > 50)
                 return BadRequest("Change wasn't applied. Name lenght should be 50 symbols or less");
-            var userId = _cookies.AcquireClientId(HttpContext);
+            var userId = AcquireUserId();
 
             var user = new User();
             var userResult = await user.Get(userId);
@@ -72,6 +85,22 @@ namespace XOX.Controllers
             }
             await user.Save();
             return Ok(JsonConvert.SerializeObject(new User(userId, name, mark)));
+        }
+
+        private Guid AcquireUserId()
+        {
+            Guid clientId;
+            string COOKIE_NAME = ".ServerSentEvents.Guid";
+
+            string cookieValue = HttpContext.Request.Cookies[COOKIE_NAME];
+            if (string.IsNullOrWhiteSpace(cookieValue) || !Guid.TryParse(cookieValue, out clientId))
+            {
+                clientId = Guid.NewGuid();
+
+                HttpContext.Response.Cookies.Append(COOKIE_NAME, clientId.ToString());
+            }
+
+            return clientId;
         }
     }
 }

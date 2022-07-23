@@ -16,6 +16,8 @@ namespace XOX.Services
 
         public ServerSentEventsAddToGroupResult? AddUserToGroup(Guid userId, string groupName)
         {
+            if (userId == Guid.Empty)
+                return null;
             IServerSentEventsClient user = _notificationsServerSentEventsService.GetClient(userId);
             if (user == null)
                 return null;
