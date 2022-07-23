@@ -19,6 +19,9 @@ export class FetchData extends Component {
         let sessionId = document.getElementById('sessionId').value;
         const response = await fetch('session/connect?sessionId=' + sessionId, {
             method: 'POST',
+            headers: {
+                ClientId: this.state.clientId
+            }
         });
         this.proceedDataResponse(response);
     }
@@ -26,6 +29,9 @@ export class FetchData extends Component {
     async retreat() {
         const response = await fetch('session/retreat?sessionId=' + this.state.data.Id, {
             method: 'POST',
+            headers: {
+                ClientId: this.state.clientId
+            }
         });
         this.proceedDataResponse(response);
     }
@@ -33,6 +39,9 @@ export class FetchData extends Component {
     async start() {
         const response = await fetch('session/start', {
             method: 'POST',
+            headers: {
+                ClientId: this.state.clientId
+            }
         });
         this.proceedDataResponse(response);
     }
@@ -40,6 +49,9 @@ export class FetchData extends Component {
     async setMark(x, y) {
         const response = await fetch('session/setMark?sessionId=' + this.state.data.Id + '&x=' + x + '&y=' + y, {
             method: 'POST',
+            headers: {
+                ClientId: this.state.clientId
+            }
         });
         this.proceedDataResponse(response);
     }
@@ -178,7 +190,11 @@ export class FetchData extends Component {
     }
 
     async loadSession() {
-        const response = await fetch('session/get?sessionId=' + this.state.data.Id);
+        const response = await fetch('session/get?sessionId=' + this.state.data.Id, {
+            method: 'GET',
+            headers: {
+                ClientId: this.state.clientId
+            } });
         await this.proceedDataResponse(response);
     }
 
@@ -211,6 +227,9 @@ export class FetchData extends Component {
         event.preventDefault(event);
         const response = await fetch('user/change?name=' + event.target.name.value + '&mark=' + event.target.mark.value, {
             method: 'POST',
+            headers: {
+                ClientId: this.state.clientId
+            }
         });
         await this.proceedUserDataResponse(response);
     }
@@ -251,6 +270,9 @@ export class FetchData extends Component {
     async addClient() {
         const response = await fetch('user/addClient?clientId=' + this.state.clientId, {
             method: 'POST',
+            headers: {
+                ClientId: this.state.clientId
+            }
         });
         if (response.status >= 500) {
             this.setState({ data: this.state.data, error: "Internal server error: " + response.status });

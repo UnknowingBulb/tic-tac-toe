@@ -46,8 +46,8 @@ namespace XOX.Controllers
         [HttpPost, Route("start")]
         public async Task<IActionResult> StartSession()
         {
-            Guid clientId = _cookies.AcquireClientId(HttpContext);
-            Guid userId = AcquireUserId();
+            var clientId = GetClientId();
+            var userId = AcquireUserId();
             var userResult = await BLObjects.User.GetOrCreate(userId);
             if (userResult.IsFailed)
                 return BadRequest(userResult.Errors[0].Message);
@@ -68,8 +68,8 @@ namespace XOX.Controllers
                 return BadRequest(sessionResult.Errors[0].Message);
             var session = sessionResult.Value;
 
-            Guid clientId = _cookies.AcquireClientId(HttpContext);
-            Guid userId = AcquireUserId();
+            var clientId = GetClientId();
+            var userId = AcquireUserId();
             var userResult = await BLObjects.User.GetOrCreate(userId);
             if (userResult.IsFailed)
                 return BadRequest(userResult.Errors[0].Message);
@@ -121,8 +121,7 @@ namespace XOX.Controllers
             if (session.State != SessionState.InProgress && session.State != SessionState.NotStarted)
                 return BadRequest("Game session is finished or not found");
 
-            Guid clientId = _cookies.AcquireClientId(HttpContext);
-            Guid userId = AcquireUserId();
+            var userId = AcquireUserId();
             if (session.Player1.Id == userId && (session.Player2 == null || session.Player2.Id == Guid.Empty) || 
                 session.Player2.Id == userId && (session.Player1 == null || session.Player1.Id == Guid.Empty))
                 return BadRequest("Can't start without 2nd player");
@@ -163,8 +162,7 @@ namespace XOX.Controllers
         [HttpPost, Route("retreat")]
         public async Task<IActionResult> FinishSession(int sessionId)
         {
-            Guid clientId = _cookies.AcquireClientId(HttpContext); 
-            Guid userId = AcquireUserId();
+            var userId = AcquireUserId();
             var sessionResult = await getSession(sessionId);
             if (sessionResult.IsFailed)
                 return BadRequest(sessionResult.Errors[0].Message);
@@ -217,6 +215,20 @@ namespace XOX.Controllers
                 clientId = Guid.NewGuid();
 
                 HttpContext.Response.Cookies.Append(COOKIE_NAME, clientId.ToString());
+            }
+
+            return clientId;
+        }
+
+        private Guid GetClientId()
+        {
+            Guid clientId;
+            string clientIdHeader = "ClientId";
+
+            string headerValue = HttpContext.Request.Headers[clientIdHeader];
+            if (string.IsNullOrWhiteSpace(headerValue) || !Guid.TryParse(headerValue, out clientId))
+            {
+                clientId = Guid.Empty;
             }
 
             return clientId;

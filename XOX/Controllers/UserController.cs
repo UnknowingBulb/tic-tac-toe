@@ -45,9 +45,10 @@ namespace XOX.Controllers
         }
 
         [HttpPost, Route("addClient")]
-        public IActionResult AddClient(Guid clientId)
+        public IActionResult AddClient()
         {
             var userId = AcquireUserId();
+            var clientId = GetClientId();
             UserClientPool.AddClient(clientId, userId);
             _clientService.AddUserToGroup(clientId, $"user{userId}");
             return Ok();
@@ -98,6 +99,19 @@ namespace XOX.Controllers
                 clientId = Guid.NewGuid();
 
                 HttpContext.Response.Cookies.Append(COOKIE_NAME, clientId.ToString());
+            }
+
+            return clientId;
+        }
+        private Guid GetClientId()
+        {
+            Guid clientId;
+            string clientIdHeader = "ClientId";
+
+            string headerValue = HttpContext.Request.Headers[clientIdHeader];
+            if (string.IsNullOrWhiteSpace(headerValue) || !Guid.TryParse(headerValue, out clientId))
+            {
+                clientId = Guid.Empty;
             }
 
             return clientId;
