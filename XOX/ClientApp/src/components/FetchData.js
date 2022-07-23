@@ -268,7 +268,7 @@ export class FetchData extends Component {
     }
 
     async addClient() {
-        const response = await fetch('user/addClient?clientId=' + this.state.clientId, {
+        const response = await fetch('user/addClient', {
             method: 'POST',
             headers: {
                 ClientId: this.state.clientId
