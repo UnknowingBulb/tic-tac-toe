@@ -6,11 +6,11 @@ export class FetchData extends Component {
 
     constructor(props) {
         super(props);
-        this.state = { data: Object, currentPlayer: Object, error: '' };
+        this.state = { data: Object, currentPlayer: Object, error: '', blocked: false };
     }
 
-    componentDidMount() {
-        this.getUser();
+    async componentDidMount() {
+        await this.getUser();
         this.updatePlayground();
     }
 
@@ -118,34 +118,59 @@ export class FetchData extends Component {
     }
 
     updatePlayground() {
-        var source = new EventSource('/session-sse');
+        var source = new EventSource('/session-sse', { withCredentials: true });
+        console.log(source.withCredentials);
+
+        source.onerror = function (event) {
+            console.log(source.readyState);
+            if (source.readyState === source.CLOSED) {
+                this.setState({
+                    error: 'Error with data load. Probably it\'s caused by second tab/window with game. Currently multiple window mode is not supported', blocked: true
+                });
+                return;
+            }
+        }.bind(this);
 
         source.onmessage = function (event) {
-            this.setState({ data: JSON.parse(event.data) });
+            let data = JSON.parse(event.data);
+            if (data.Id === this.state.data.Id)
+                this.setState({ data: data });
+            else {
+                this.setState({ error: "Probably there was changes in your session: " + data.Id });
+            }
         }.bind(this);
+        
     }
 
     render() {
         let contents =
             <div className='container'>
-                <div id='sessionControl'>
-                    <input type='number' id='sessionId' className='control' placeholder='Enter session no. to connect to'></input>
-                    <button id='connect' className='control btn' onClick={() => this.connect()}>Connect</button>
-                    <button id='start' className='control btn' onClick={() => this.start()}>Start new</button>
-                    {(((this.state.data == null) || (this.state.data.Id == null)) || this.state.data.State !== 2) ?
-                        null :
-                        <button id='retreat' className='control btn secondary-btn' onClick={() => this.retreat()}>Retreat</button>}
+                {(this.state.blocked===true) ? <div id='error' key='error' className='error'>
+                    <div>
+                        {this.state.error}
+                    </div>
                 </div>
-                {(this.state.error) ?
-                    <div id='error' key='error' className='error'>
-                        <div>
-                            {this.state.error}
+                    :
+                    <div>
+                        <div id='sessionControl'>
+                            <input type='number' id='sessionId' className='control' placeholder='Enter session no. to connect to'></input>
+                            <button id='connect' className='control btn' onClick={() => this.connect()}>Connect</button>
+                            <button id='start' className='control btn' onClick={() => this.start()}>Start new</button>
+                            {(((this.state.data == null) || (this.state.data.Id == null)) || this.state.data.State !== 2) ?
+                                null :
+                                <button id='retreat' className='control btn secondary-btn' onClick={() => this.retreat()}>Retreat</button>}
                         </div>
-                        <button className='nocolor-btn' onClick={() => this.closeError()} >
-                            X
-                        </button>
-                    </div> : null}
-                {((this.state.data == null) || (this.state.data.Id == null)) ? (this.renderNoSessionPlayer()) : (this.renderPlayground())}
+                        {(this.state.error) ?
+                            <div id='error' key='error' className='error'>
+                                <div>
+                                    {this.state.error}
+                                </div>
+                                <button className='nocolor-btn' onClick={() => this.closeError()} >
+                                    X
+                                </button>
+                            </div> : null}
+                        {((this.state.data == null) || (this.state.data.Id == null)) ? (this.renderNoSessionPlayer()) : (this.renderPlayground())}
+                    </div>}
             </div>;
 
         return (contents);
