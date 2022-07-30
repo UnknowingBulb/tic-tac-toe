@@ -27,7 +27,9 @@ namespace XOX.Controllers
         [HttpGet, Route("get")]
         public async Task<IActionResult> GetSession(int sessionId)
         {
-            _cookies.AcquireClientId(HttpContext);
+            var clientId = GetClientId();
+            var userId = AcquireUserId();
+            _clientService.AddUserToGroup(clientId, $"user{userId}");
             var sessionResult = await getSession(sessionId);
             if (sessionResult.IsFailed)
                 return BadRequest(sessionResult.Errors[0].Message);
@@ -52,6 +54,7 @@ namespace XOX.Controllers
             if (userResult.IsFailed)
                 return BadRequest(userResult.Errors[0].Message);
 
+            _clientService.AddUserToGroup(clientId, $"user{userId}");
             var user = userResult.Value;
             var session = new Session(user);
             await session.Save();
@@ -74,6 +77,7 @@ namespace XOX.Controllers
             if (userResult.IsFailed)
                 return BadRequest(userResult.Errors[0].Message);
 
+            _clientService.AddUserToGroup(clientId, $"user{userId}");
             var user = userResult.Value;
             //If no empty slots
             if (!((session.Player1 == null || session.Player2 == null) || 
@@ -197,9 +201,17 @@ namespace XOX.Controllers
         {
             await _notificationsService.SendNotificationAsync(responseData, $"session{session.Id}");
             if (session.Player1 != null && session.Player1.Id != Guid.Empty)
+            {
+                var t = $"user{session.Player1.Id}";
+                var b = _clientService.GetUsers($"user{session.Player1.Id}");
                 await _notificationsService.SendNotificationAsync(responseData, $"user{session.Player1.Id}");
+            }
             if (session.Player2 != null && session.Player2.Id != Guid.Empty)
+            {
+                var k = $"user{session.Player2.Id}";
+                var a = _clientService.GetUsers($"user{session.Player2.Id}");
                 await _notificationsService.SendNotificationAsync(responseData, $"user{session.Player2.Id}");
+            }
             if (!session.HasUser(user))
                 await _notificationsService.SendNotificationAsync(responseData, $"user{user}");
         }

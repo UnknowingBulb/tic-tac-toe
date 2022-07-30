@@ -84,9 +84,9 @@ namespace XOX
                         name: "default",
                         pattern: "{controller}/{action=Index}/{id?}");
 
-                    endpoints.MapControllerRoute(
+                    /*endpoints.MapControllerRoute(
                         name: "sse",
-                        pattern: "{controller=Session}/{action=session-reciever}");
+                        pattern: "{controller=Session}/{action=session-reciever}");*/
                 });
 
             app.UseSpa(spa =>

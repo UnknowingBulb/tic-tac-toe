@@ -6,12 +6,11 @@ export class FetchData extends Component {
 
     constructor(props) {
         super(props);
-        this.state = { data: Object, currentPlayer: Object, clientId: '', error: '', blocked: false };
+        this.state = { data: Object, currentPlayer: Object, clientId: this.uuidv4(), error: '', blocked: false, mounted: false };
     }
 
     async componentDidMount() {
         await this.getUser();
-        await this.generateAndSaveClientId();
         this.updatePlayground();
     }
 
@@ -132,10 +131,8 @@ export class FetchData extends Component {
 
     updatePlayground() {
         var source = new EventSource('/session-sse', { withCredentials: true });
-        console.log(source.withCredentials);
 
         source.onerror = function (event) {
-            console.log(source.readyState);
             if (source.readyState === source.CLOSED) {
                 this.setState({
                     error: 'Something went wrong. Try reload page and reconnect', blocked: true
@@ -199,8 +196,13 @@ export class FetchData extends Component {
     }
 
     async getUser() {
-        const response = await fetch('user/getOrCreate');
-        this.setState({ currentPlayer: await response.json(), error: null });
+        const response = await fetch('user/getOrCreate', {
+            method: 'POST',
+            headers: {
+                ClientId: this.state.clientId
+            }
+        });
+        this.setState({ currentPlayer: await response.json(), error: null, mounted: !this.state.mounted });
     }
 
     getWinnerName() {
@@ -262,12 +264,7 @@ export class FetchData extends Component {
         this.setState({error: null });
     }
 
-    async generateAndSaveClientId() {
-        this.setState({ clientId: this.uuidv4(), error: null });
-        await this.addClient()
-    }
-
-    async addClient() {
+    async saveClientId() {
         const response = await fetch('user/addClient', {
             method: 'POST',
             headers: {
@@ -283,9 +280,10 @@ export class FetchData extends Component {
     }
 
     uuidv4() {
-        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        let guid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
             var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
             return v.toString(16);
         });
+        return guid;
     }
 }

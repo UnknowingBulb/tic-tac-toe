@@ -32,10 +32,12 @@ namespace XOX.Controllers
             return Ok(JsonConvert.SerializeObject(userResult.Value));
         }
 
-        [HttpGet, Route("getOrCreate")]
+        [HttpPost, Route("getOrCreate")]
         public async Task<IActionResult> GetOrCreateUser()
         {
             var userId = AcquireUserId();
+            var clientId = GetClientId();
+            UserClientPool.AddClient(clientId, userId);
             var userResult = await BLObjects.User.GetOrCreate(userId);
             if (userResult.IsFailed)
                 return BadRequest(userResult.Errors[0].Message);
